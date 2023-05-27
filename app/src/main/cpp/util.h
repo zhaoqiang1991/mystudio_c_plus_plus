@@ -5,6 +5,10 @@
 #ifndef MY_APPLICATION_UTIL_H
 #define MY_APPLICATION_UTIL_H
 
+/**
+ * 在Android studio里面创建ndk工程，单独创建的.h文件必须要在别的使用引用，比如
+ * #include "util.h"，这样子，不然当前创建的.h文件里面导入的头文件就会报错
+ */
 #include <android/log.h>
 #define TAG "FFMPEG" // 这个是自定义的LOG的标识
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG ,__VA_ARGS__) // 定义LOGD类型

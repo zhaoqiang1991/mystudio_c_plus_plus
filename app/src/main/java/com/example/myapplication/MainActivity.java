@@ -3,18 +3,22 @@ package com.example.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.example.myapplication.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getName();
+
     // Used to load the 'myapplication' library on application startup.
     static {
-        System.loadLibrary("myapplication");
+        System.loadLibrary("native");
     }
 
     private ActivityMainBinding binding;
+    private TextView tv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,14 +27,26 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Example of a call to a native method
-        TextView tv = binding.sampleText;
-        tv.setText(stringFromJNI());
     }
 
-    /**
-     * A native method that is implemented by the 'myapplication' native library,
-     * which is packaged with this application.
-     */
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        tv = binding.sampleText;
+        tv.setText(stringFromJNI());
+
+
+        binding.sampleAddressTv.setText(getAddress());
+       /* String info = shareSchoolInfo("布拉德", 29);
+        Log.d(TAG,"=====info = "+ info);*/
+    }
+
     public native String stringFromJNI();
+
+    //java调用jni
+    public native String getAddress();
+
+   // public native void shareSchoolInfo(String name, int age);
 }

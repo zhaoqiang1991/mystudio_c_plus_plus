@@ -39,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         binding.sampleAddressTv.setText(getAddress());
-       /* String info = shareSchoolInfo("布拉德", 29);
-        Log.d(TAG,"=====info = "+ info);*/
+        String info = shareSchoolInfo("布拉德", 29);
+        Log.d(TAG,"=====info = "+ info);
     }
 
     public native String stringFromJNI();
@@ -48,5 +48,5 @@ public class MainActivity extends AppCompatActivity {
     //java调用jni
     public native String getAddress();
 
-   // public native void shareSchoolInfo(String name, int age);
+    public native String shareSchoolInfo(String name, int age);
 }

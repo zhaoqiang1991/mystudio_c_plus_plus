@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <string>
 #include <iostream>
+#include <pthread.h>
 
 using namespace std;
 

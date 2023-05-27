@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22.1)
 project("myapplication")
 
 add_library(
-        myapplication
+        native
         SHARED
         native-lib.cpp)
 
@@ -13,5 +13,5 @@ find_library(
 
 
 target_link_libraries(
-        myapplication
+        native
         ${log-lib})

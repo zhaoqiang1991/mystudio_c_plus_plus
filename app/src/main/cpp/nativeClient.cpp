@@ -50,6 +50,7 @@ Java_com_example_myapplication_MainActivity_getStudentInfo(JNIEnv *env, jobject 
 
     // 创建字符串对象并设置值
     jstring newName = env->NewStringUTF("John Doe");
+    env->ReleaseStringUTFChars(name,className);
     jint score = 95;
 
    // jmethodID constructor = env->GetMethodID(clazz, "<init>", "()V");
@@ -57,5 +58,14 @@ Java_com_example_myapplication_MainActivity_getStudentInfo(JNIEnv *env, jobject 
 
     jobject studentObj = env->NewObject(clazz, constructor, newName, score);
 
+    jmethodID methodId = env->GetMethodID(clazz,"setScore","(I)V");
+    env->CallVoidMethod(studentObj,methodId,1000);
+
+    jmethodID methodNameId = env->GetMethodID(clazz,"setName","(Ljava/lang/String;)V");
+    jstring result = env->NewStringUTF("华莱士爱索菲亚");
+    env->CallVoidMethod(studentObj,methodNameId,result);
+
+    //释放掉局部变量,可以不手动释放，会被自动释放
+    env->DeleteLocalRef(result);
     return studentObj;
 }

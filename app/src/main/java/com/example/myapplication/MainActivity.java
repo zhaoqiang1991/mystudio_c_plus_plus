@@ -33,16 +33,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        methond1();
+       /* methond1();
         method2();
         method3();
-        method4();
+        method4();*/
+        method5();
 
 
     }
 
+    private void method5() {
+        localRef("com/example/myapplication/bean/Student");
+    }
+
+
     private void method4() {
-        setStudentInfo(new Student("法拉第",9999));
+        setStudentInfo(new Student("法拉第", 9999));
     }
 
     private void method3() {
@@ -73,4 +79,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     public native void setStudentInfo(Student student);
+
+    /**
+     * 局部引用测试
+     * @param s
+     */
+    public native void localRef(String s);
 }

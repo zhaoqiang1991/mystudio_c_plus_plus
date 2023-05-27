@@ -1,5 +1,7 @@
 package com.example.myapplication.bean;
 
+import android.util.Log;
+
 public class Student {
     private String name;
     private int score;
@@ -26,13 +28,11 @@ public class Student {
 
     public void setScore(int score) {
         this.score = score;
+        Log.d("MainActivity", "native 回调到java层 score = " + score);
     }
 
     @Override
     public String toString() {
-        return "Student{" +
-                "name='" + name + '\'' +
-                ", score=" + score +
-                '}';
+        return "Student{" + "name='" + name + '\'' + ", score=" + score + '}';
     }
 }

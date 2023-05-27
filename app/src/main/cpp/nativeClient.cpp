@@ -84,3 +84,18 @@ Java_com_example_myapplication_MainActivity_setStudentInfo(JNIEnv *env, jobject 
     const char *result = env->GetStringUTFChars(jstring1, 0);
     LOGD("======result = %s\n", result);
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myapplication_MainActivity_localRef(JNIEnv *env, jobject thiz, jstring s) {
+    const char *name = env->GetStringUTFChars(s, 0);
+    static jclass clazz = env->FindClass(name);
+    jstring newName = env->NewStringUTF("John Doe");
+
+    jint score = 95;
+    jmethodID constructor = env->GetMethodID(clazz, "<init>", "(Ljava/lang/String;I)V");
+
+    jobject studentObj = env->NewObject(clazz, constructor, newName, score);
+    jmethodID methodId = env->GetMethodID(clazz, "setScore", "(I)V");
+    env->CallVoidMethod(studentObj, methodId, 1000);
+    LOGD("======调用了局部引用方法\n");
+}

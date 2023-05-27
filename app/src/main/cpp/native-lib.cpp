@@ -27,10 +27,8 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_example_myapplication_MainActivity_shareSchoolInfo(JNIEnv *env, jobject thiz, jstring name,
                                                             jint age) {
-    const jchar *jName = env->GetStringChars(name, 0);
-
-    // LOGD("########## i = %d", jName);
+    const char *result = env->GetStringUTFChars(name, 0);
+    LOGD("########## i = %s", result);
     LOGD("########## i = %d", age);
-    //__android_log_print(ANDROID_LOG_DEBUG,TAG ,"");
-    return env->NewStringUTF("llll");;
+    return env->NewStringUTF(result);
 }

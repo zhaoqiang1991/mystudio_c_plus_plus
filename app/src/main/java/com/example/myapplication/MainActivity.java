@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         binding.sampleAddressTv.setText(getAddress());
-        String info = shareSchoolInfo("布拉德", 29);
+        String info = shareSchoolInfo("布拉德皮特", 29);
         Log.d(TAG,"=====info = "+ info);
     }
 

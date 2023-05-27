@@ -8,6 +8,7 @@
 /**
  * 在Android studio里面创建ndk工程，单独创建的.h文件必须要在别的使用引用，比如
  * #include "util.h"，这样子，不然当前创建的.h文件里面导入的头文件就会报错
+ * 可以使用这种.h 文件来定义一些工具类什么的
  */
 #include <android/log.h>
 #define TAG "FFMPEG" // 这个是自定义的LOG的标识

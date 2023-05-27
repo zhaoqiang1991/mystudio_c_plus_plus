@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.example.myapplication.bean.Student;
 import com.example.myapplication.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
         binding.sampleAddressTv.setText(getAddress());
         String info = shareSchoolInfo("布拉德皮特", 29);
         Log.d(TAG,"=====info = "+ info);
+        Log.d(TAG,"============================================\n\n ");
+
+        Student studentInfo = getStudentInfo("com/example/myapplication/bean/Student");
+        Log.d(TAG,"=====getStudentInfo = "+ studentInfo.toString());
     }
 
     public native String stringFromJNI();
@@ -49,4 +54,6 @@ public class MainActivity extends AppCompatActivity {
     public native String getAddress();
 
     public native String shareSchoolInfo(String name, int age);
+
+    public native Student getStudentInfo(String name);
 }

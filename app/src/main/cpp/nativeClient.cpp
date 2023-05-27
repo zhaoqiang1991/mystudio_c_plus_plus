@@ -41,7 +41,7 @@ Java_com_example_myapplication_MainActivity_getStudentInfo(JNIEnv *env, jobject 
                                                            jstring name) {
 
     const char *className = env->GetStringUTFChars(name, 0);
-   // jclass clazz = env->FindClass("com/example/myapplication/bean/Student");
+    // jclass clazz = env->FindClass("com/example/myapplication/bean/Student");
     jclass clazz = env->FindClass(className);
 
     /* jmethodID getName = env->GetMethodID(clazz, "getName", " ()Ljava/lang/String");
@@ -50,22 +50,37 @@ Java_com_example_myapplication_MainActivity_getStudentInfo(JNIEnv *env, jobject 
 
     // 创建字符串对象并设置值
     jstring newName = env->NewStringUTF("John Doe");
-    env->ReleaseStringUTFChars(name,className);
+    env->ReleaseStringUTFChars(name, className);
     jint score = 95;
 
-   // jmethodID constructor = env->GetMethodID(clazz, "<init>", "()V");
+    // jmethodID constructor = env->GetMethodID(clazz, "<init>", "()V");
     jmethodID constructor = env->GetMethodID(clazz, "<init>", "(Ljava/lang/String;I)V");
 
     jobject studentObj = env->NewObject(clazz, constructor, newName, score);
 
-    jmethodID methodId = env->GetMethodID(clazz,"setScore","(I)V");
-    env->CallVoidMethod(studentObj,methodId,1000);
+    jmethodID methodId = env->GetMethodID(clazz, "setScore", "(I)V");
+    env->CallVoidMethod(studentObj, methodId, 1000);
 
-    jmethodID methodNameId = env->GetMethodID(clazz,"setName","(Ljava/lang/String;)V");
+    jmethodID methodNameId = env->GetMethodID(clazz, "setName", "(Ljava/lang/String;)V");
     jstring result = env->NewStringUTF("华莱士爱索菲亚");
-    env->CallVoidMethod(studentObj,methodNameId,result);
+    env->CallVoidMethod(studentObj, methodNameId, result);
 
     //释放掉局部变量,可以不手动释放，会被自动释放
     env->DeleteLocalRef(result);
     return studentObj;
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myapplication_MainActivity_setStudentInfo(JNIEnv *env, jobject thiz,
+                                                           jobject student) {
+    jclass jstudent = env->GetObjectClass(student);
+    jmethodID jmethodId = env->GetMethodID(jstudent, "getScore", "()I");
+    jint score = env->CallIntMethod(student, jmethodId);
+    LOGD("======score = %d\n", score);
+
+    jmethodID jmethodNameId = env->GetMethodID(jstudent, "getName", "()Ljava/lang/String;");
+    jstring jstring1 = (jstring) env->CallObjectMethod(student, jmethodNameId);
+
+    const char *result = env->GetStringUTFChars(jstring1, 0);
+    LOGD("======result = %s\n", result);
 }

@@ -13,7 +13,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
 
-    // Used to load the 'myapplication' library on application startup.
     static {
         System.loadLibrary("native");
     }
@@ -34,18 +33,33 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        methond1();
+        method2();
+        method3();
+        method4();
 
-        tv = binding.sampleText;
-        tv.setText(stringFromJNI());
 
+    }
 
+    private void method4() {
+        setStudentInfo(new Student("法拉第",9999));
+    }
+
+    private void method3() {
+        Student studentInfo = getStudentInfo("com/example/myapplication/bean/Student");
+        Log.d(TAG, "=====getStudentInfo = " + studentInfo.toString());
+    }
+
+    private void method2() {
         binding.sampleAddressTv.setText(getAddress());
         String info = shareSchoolInfo("布拉德皮特", 29);
-        Log.d(TAG,"=====info = "+ info);
-        Log.d(TAG,"============================================\n\n ");
+        Log.d(TAG, "=====info = " + info);
+        Log.d(TAG, "============================================\n\n ");
+    }
 
-        Student studentInfo = getStudentInfo("com/example/myapplication/bean/Student");
-        Log.d(TAG,"=====getStudentInfo = "+ studentInfo.toString());
+    private void methond1() {
+        tv = binding.sampleText;
+        tv.setText(stringFromJNI());
     }
 
     public native String stringFromJNI();
@@ -56,4 +70,7 @@ public class MainActivity extends AppCompatActivity {
     public native String shareSchoolInfo(String name, int age);
 
     public native Student getStudentInfo(String name);
+
+
+    public native void setStudentInfo(Student student);
 }

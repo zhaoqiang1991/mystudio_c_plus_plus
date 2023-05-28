@@ -181,6 +181,9 @@ Java_com_example_myapplication_MainActivity_globalRef3(JNIEnv *env, jobject thiz
     LOGD("======调用了局部引用方法\n");
 }
 
+
+
+
 extern "C"
 void *updateUi(void *args) {
     JNIEnv *jniEnv = 0;
@@ -191,19 +194,22 @@ void *updateUi(void *args) {
         LOGD("====绑定线程失败 !");
         return 0;
     }
+
+
+
+
     Context *context = static_cast<Context *>(args);
 
     jclass jclassobj = jniEnv->GetObjectClass(context->instance);
     jmethodID jmethodId = jniEnv->GetMethodID(jclassobj, "notifyUIRefresh", "()V");
     jniEnv->CallVoidMethod(context->instance, jmethodId);
 
+
+
+    //分离
+     _vm->DetachCurrentThread();
     delete context;
     context = 0;
-    //jniEnv->DeleteGlobalRef(context->instance);
-    //分离
-    // _vm->DetachCurrentThread();
-
-
     return 0;
 }
 

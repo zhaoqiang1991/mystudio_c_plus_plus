@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG,"====Java层当前线程的名字 = "+Thread.currentThread().getName());
                     Toast.makeText(MainActivity.this, "子线程中更新UI", Toast.LENGTH_LONG).show();
                 }
             });

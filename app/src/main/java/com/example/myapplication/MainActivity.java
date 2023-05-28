@@ -42,9 +42,18 @@ public class MainActivity extends AppCompatActivity {
 
        /* method6();
         method6();*/
-        method7();
-        method7();
+       /* method7();
+        method7();*/
+        method8();
 
+    }
+
+    /**
+     * 测试动态注册
+     */
+    private void method8() {
+        JavaHelper javaHelper = new JavaHelper();
+        javaHelper.getNativeAddress();
     }
 
     private void method7() {

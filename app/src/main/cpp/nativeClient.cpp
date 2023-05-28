@@ -133,6 +133,11 @@ Java_com_example_myapplication_MainActivity_localRef2(JNIEnv *env, jobject thiz,
     LOGD("======调用了局部引用方法\n");
 }
 
+
+/**
+ * 全局引用，即使出了方法栈，那么引用也不会被回收
+ * 还有一个弱全局引用env->NewWeakGlobalRef()，这个不会阻止被回收，在使用的时候需要判断
+ */
 jclass studentClazz = 0;
 extern "C"
 JNIEXPORT void JNICALL
@@ -153,5 +158,8 @@ Java_com_example_myapplication_MainActivity_globalRef3(JNIEnv *env, jobject thiz
     jobject studentObj = env->NewObject(studentClazz, constructor, newName, score);
     jmethodID methodId = env->GetMethodID(studentClazz, "setScore", "(I)V");
     env->CallVoidMethod(studentObj, methodId, 1000);
+    env->DeleteGlobalRef(studentClazz);
+
     LOGD("======调用了局部引用方法\n");
 }
+

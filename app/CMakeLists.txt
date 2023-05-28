@@ -3,19 +3,12 @@ cmake_minimum_required(VERSION 3.22.1)
 #这个project引用的名字就是未来在java工程里面引用到的库名字
 #比如 System.loadLibrary("native");
 project("native")
-#[[
-set(ANDROID_NDK /Users/lh/Library/Android/sdk/ndk/)
-include_directories(${ANDROID_NDK}/sources/android/native_app_glue)]]
-
-
 #指定编译路径
-file(GLOB SOURCE src/main/cpp/*.cpp)
-add_library(
-        native
-        SHARED
-        ${SOURCE}
-)
+file(GLOB SOURCES "src/main/cpp/*.cpp")
 
+add_library(native SHARED ${SOURCES})
+
+#指定头文件的搜索路径
 include_directories(src/main/cpp/*.h)
 find_library(
         log-lib

@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.22.1)
 #比如 System.loadLibrary("native");
 project("native")
 #指定编译路径
-file(GLOB SOURCES "src/main/cpp/*.cpp")
+#file(GLOB SOURCES "src/main/cpp/*.cpp")
+file(GLOB SOURCES "src/main/cpp/nativeClient.cpp")
 
 add_library(native SHARED ${SOURCES})
 

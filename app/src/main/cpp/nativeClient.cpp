@@ -9,6 +9,24 @@
 using namespace std;
 jclass clazz;
 
+JavaVM *_vm;
+
+typedef struct {
+    jobject instance;
+} Context;
+
+int JNI_OnLoad(JavaVM *vm, void *r) {
+    LOGD("======JNI_OnLoad 调用了");
+    _vm = vm;
+    JNIEnv *jniEnv = 0;
+    jint ref = vm->GetEnv(reinterpret_cast<void **>(&jniEnv), JNI_VERSION_1_6);
+    if (ref != JNI_OK) {
+        LOGD("======GetEnv失败了");
+        return -1;
+    }
+    return JNI_VERSION_1_6;
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_myapplication_MainActivity_stringFromJNI(
         JNIEnv *env,
@@ -163,3 +181,42 @@ Java_com_example_myapplication_MainActivity_globalRef3(JNIEnv *env, jobject thiz
     LOGD("======调用了局部引用方法\n");
 }
 
+extern "C"
+void *updateUi(void *args) {
+    JNIEnv *jniEnv = 0;
+    //附加线程，把native线程附加到javaVm虚拟机
+    jint status = _vm->AttachCurrentThread(&jniEnv, 0);
+    if (status != JNI_OK) {
+        //绑定线程失败
+        LOGD("====绑定线程失败 !");
+        return 0;
+    }
+    Context *context = static_cast<Context *>(args);
+
+    jclass jclassobj = jniEnv->GetObjectClass(context->instance);
+    jmethodID jmethodId = jniEnv->GetMethodID(jclassobj, "notifyUIRefresh", "()V");
+    jniEnv->CallVoidMethod(context->instance, jmethodId);
+
+    delete context;
+    context = 0;
+    //jniEnv->DeleteGlobalRef(context->instance);
+    //分离
+    // _vm->DetachCurrentThread();
+
+
+    return 0;
+}
+
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myapplication_MainActivity_quarteringThread(JNIEnv *env, jobject thiz) {
+    pthread_t pthread;
+    Context *context = new Context();
+    jobject jobject1 = env->NewGlobalRef(thiz);
+    context->instance = jobject1;
+    pthread_create(&pthread, 0, updateUi, context);
+
+}

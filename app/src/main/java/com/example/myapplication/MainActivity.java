@@ -2,9 +2,12 @@ package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.myapplication.bean.Student;
 import com.example.myapplication.databinding.ActivityMainBinding;
@@ -44,13 +47,25 @@ public class MainActivity extends AppCompatActivity {
         method6();*/
        /* method7();
         method7();*/
-       // method8();
-        method9();
+        // method8();
+        // method9();
+        //method10();
+        method11();
+    }
+
+    private void method11() {
+        quarteringThread();
+    }
+
+
+    private void method10() {
+        JavaHelper javaHelper = new JavaHelper();
+        // javaHelper.testThread();
     }
 
     private void method9() {
         JavaHelper javaHelper = new JavaHelper();
-        javaHelper.showName(90,"爱迪生");
+        // javaHelper.showName(90, "爱迪生");
     }
 
     /**
@@ -58,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void method8() {
         JavaHelper javaHelper = new JavaHelper();
-        javaHelper.getNativeAddress();
+        //javaHelper.getNativeAddress();
     }
 
     private void method7() {
@@ -95,6 +110,22 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(stringFromJNI());
     }
 
+    public void notifyUIRefresh() {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            //在主线程
+            Toast.makeText(MainActivity.this, "主线程中更新UI", Toast.LENGTH_LONG).show();
+        } else {
+            //子线程
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "子线程中更新UI", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        ;
+    }
+
     public native String stringFromJNI();
 
     //java调用jni
@@ -122,4 +153,9 @@ public class MainActivity extends AppCompatActivity {
     public native void localRef2(String methodName);
 
     public native void globalRef3(String method_name);
+
+    /**
+     * 测试夸线程调用
+     */
+    public native void quarteringThread();
 }

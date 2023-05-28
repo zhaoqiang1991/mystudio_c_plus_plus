@@ -44,8 +44,13 @@ public class MainActivity extends AppCompatActivity {
         method6();*/
        /* method7();
         method7();*/
-        method8();
+       // method8();
+        method9();
+    }
 
+    private void method9() {
+        JavaHelper javaHelper = new JavaHelper();
+        javaHelper.showName(90,"爱迪生");
     }
 
     /**

@@ -16,10 +16,26 @@ void getAddress(JNIEnv *env, jobject thiz) {
 }
 
 /**
+ * 本地方法
+ */
+void showNativename(JNIEnv *env, jobject thiz, jint age, jstring address) {
+    LOGD("======getAddress 调用了");
+    LOGD("================================================");
+    LOGD("age= %d ", age);
+
+    const char *jAddress = env->GetStringUTFChars(address, 0);
+    LOGD("address = %s\n", jAddress);
+}
+
+/**
  * 动态注册方法表
+ * 第一个参数：java里面写的jni方法
+ * 第二个参数：Java里面写的native方法对应的方法签名
+ * 第三个参数:本地方法
  */
 static const JNINativeMethod jniNativeMethod[] = {
-        {"getNativeAddress", "()V", (void *) getAddress}
+        {"getNativeAddress", "()V", (void *) getAddress},
+        {"showName", "(ILjava/lang/String;)V", (void *) showNativename}
 };
 
 static const char *className = "com/example/myapplication/JavaHelper";

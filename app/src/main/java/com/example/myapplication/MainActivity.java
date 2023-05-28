@@ -37,13 +37,26 @@ public class MainActivity extends AppCompatActivity {
         method2();
         method3();
         method4();*/
-        method5();
+//        method5();
+//        method5();
 
+       /* method6();
+        method6();*/
+        method7();
+        method7();
 
+    }
+
+    private void method7() {
+        globalRef3("com/example/myapplication/bean/Student");
     }
 
     private void method5() {
         localRef("com/example/myapplication/bean/Student");
+    }
+
+    private void method6() {
+        localRef2("com/example/myapplication/bean/Student");
     }
 
 
@@ -82,7 +95,17 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 局部引用测试
+     *
      * @param s
      */
     public native void localRef(String s);
+
+    /**
+     * 局部引用测试
+     *
+     * @param methodName
+     */
+    public native void localRef2(String methodName);
+
+    public native void globalRef3(String method_name);
 }

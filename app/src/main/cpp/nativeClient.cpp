@@ -7,6 +7,7 @@
 
 
 using namespace std;
+jclass clazz;
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_myapplication_MainActivity_stringFromJNI(
@@ -84,11 +85,17 @@ Java_com_example_myapplication_MainActivity_setStudentInfo(JNIEnv *env, jobject 
     const char *result = env->GetStringUTFChars(jstring1, 0);
     LOGD("======result = %s\n", result);
 }
+
+/**
+ * 局部引用在这个方法走完，那么就会在这个栈就会被回收，这个方法栈里面的
+ * 所有资源都会被销毁，所以再次调用的时候就会报错,但是下面这种写法每次都
+ * 会创建新的，所以不会报错，但是换种写法就会报错，在看接下来的方法
+ */
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_myapplication_MainActivity_localRef(JNIEnv *env, jobject thiz, jstring s) {
     const char *name = env->GetStringUTFChars(s, 0);
-    static jclass clazz = env->FindClass(name);
+    jclass clazz = env->FindClass(name);
     jstring newName = env->NewStringUTF("John Doe");
 
     jint score = 95;
@@ -96,6 +103,55 @@ Java_com_example_myapplication_MainActivity_localRef(JNIEnv *env, jobject thiz, 
 
     jobject studentObj = env->NewObject(clazz, constructor, newName, score);
     jmethodID methodId = env->GetMethodID(clazz, "setScore", "(I)V");
+    env->CallVoidMethod(studentObj, methodId, 1000);
+    LOGD("======调用了局部引用方法\n");
+}
+
+
+/**
+ * 局部引用在这个方法走完，那么就会在这个栈就会被回收，这个方法栈里面的
+ * 所有资源都会被销毁，所以再次调用的时候就会报错,根本原因就是
+ * 指针有值，但是指针所指向的地址数据被释放了，相当于野指针，所以
+ * 第二次调用就会crash
+ */
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myapplication_MainActivity_localRef2(JNIEnv *env, jobject thiz,
+                                                      jstring method_name) {
+    const char *name = env->GetStringUTFChars(method_name, 0);
+    if (clazz == NULL) {
+        clazz = env->FindClass(name);
+    }
+    jstring newName = env->NewStringUTF("John Doe");
+
+    jint score = 95;
+    jmethodID constructor = env->GetMethodID(clazz, "<init>", "(Ljava/lang/String;I)V");
+
+    jobject studentObj = env->NewObject(clazz, constructor, newName, score);
+    jmethodID methodId = env->GetMethodID(clazz, "setScore", "(I)V");
+    env->CallVoidMethod(studentObj, methodId, 1000);
+    LOGD("======调用了局部引用方法\n");
+}
+
+jclass studentClazz = 0;
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myapplication_MainActivity_globalRef3(JNIEnv *env, jobject thiz,
+                                                       jstring method_name) {
+    const char *name = env->GetStringUTFChars(method_name, 0);
+
+    if (studentClazz == NULL) {
+        clazz = env->FindClass(name);
+        //把class转化为全局引用
+        studentClazz = static_cast<jclass>(env->NewGlobalRef(clazz));
+    }
+    jstring newName = env->NewStringUTF("John Doe");
+
+    jint score = 95;
+    jmethodID constructor = env->GetMethodID(studentClazz, "<init>", "(Ljava/lang/String;I)V");
+
+    jobject studentObj = env->NewObject(studentClazz, constructor, newName, score);
+    jmethodID methodId = env->GetMethodID(studentClazz, "setScore", "(I)V");
     env->CallVoidMethod(studentObj, methodId, 1000);
     LOGD("======调用了局部引用方法\n");
 }

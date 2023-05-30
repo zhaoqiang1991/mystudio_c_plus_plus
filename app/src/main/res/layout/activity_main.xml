@@ -20,9 +20,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toTopOf="@id/start_player_tv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/sample_text"
-        app:layout_constraintTop_toTopOf="parent"
         tools:text="地址" />
+
+
+    <TextView
+        android:id="@+id/start_player_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="进入播放器!"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sample_address_tv" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

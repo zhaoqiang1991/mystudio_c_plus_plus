@@ -3,14 +3,17 @@ package com.example.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.myapplication.bean.Student;
 import com.example.myapplication.databinding.ActivityMainBinding;
+import com.example.myapplication.player.PlayerActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,7 +53,18 @@ public class MainActivity extends AppCompatActivity {
         // method8();
         // method9();
         //method10();
-       // method11();
+        // method11();
+        method12();
+    }
+
+    private void method12() {
+        binding.startPlayerTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void method11() {
@@ -119,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG,"====Java层当前线程的名字 = "+Thread.currentThread().getName());
+                    Log.d(TAG, "====Java层当前线程的名字 = " + Thread.currentThread().getName());
                     Toast.makeText(MainActivity.this, "子线程中更新UI", Toast.LENGTH_LONG).show();
                 }
             });

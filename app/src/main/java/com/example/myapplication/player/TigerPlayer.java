@@ -74,5 +74,5 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     public native void _stop();
 
-    public native void _seek();
+    public native void _seek(int progress);
 }

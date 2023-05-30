@@ -20,7 +20,7 @@ void native_prepare(JNIEnv *env, jobject thiz, jstring data_source) {
     LOGD("======native_prepare 调用了");
     LOGD("================================================");
     const char *dataSource = env->GetStringUTFChars(data_source, 0);
-    //CallJavaHelper *callJavaHelper = new CallJavaHelper(_vm, env, &thiz);
+    CallJavaHelper *callJavaHelper = new CallJavaHelper(_vm, env, &thiz);
 
     LOGD("data_source = %s\n", dataSource);
 }

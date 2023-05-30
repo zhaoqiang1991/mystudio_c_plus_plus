@@ -5,6 +5,7 @@
 #include <android/log.h>
 #include "util.h"
 
+#ifdef ENABLE_JNI_ONLOAD
 
 using namespace std;
 jclass clazz;
@@ -226,3 +227,4 @@ Java_com_example_myapplication_MainActivity_quarteringThread(JNIEnv *env, jobjec
     pthread_create(&pthread, 0, updateUi, context);
 
 }
+#endif

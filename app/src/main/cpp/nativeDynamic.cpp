@@ -5,6 +5,8 @@
 #include <android/log.h>
 #include "util.h"
 
+#ifdef ENABLE_DYNAMIC_JNI_ONLOAD
+
 using namespace std;
 JavaVM *_vm;
 
@@ -84,7 +86,7 @@ static const JNINativeMethod jniNativeMethod[] = {
 
 static const char *className = "com/example/myapplication/JavaHelper";
 
-/*int JNI_OnLoad(JavaVM *vm, void *r) {
+int JNI_OnLoad(JavaVM *vm, void *r) {
     LOGD("======JNI_OnLoad 调用了");
     _vm = vm;
     JNIEnv *jniEnv = 0;
@@ -99,4 +101,5 @@ static const char *className = "com/example/myapplication/JavaHelper";
     jniEnv->RegisterNatives(clazz, jniNativeMethod,
                             sizeof(jniNativeMethod) / sizeof(JNINativeMethod));
     return JNI_VERSION_1_6;
-}*/
+}
+#endif

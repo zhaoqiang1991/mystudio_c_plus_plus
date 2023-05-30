@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 3.22.1)
 #比如 System.loadLibrary("native");
 project("native")
 #指定编译路径
-#file(GLOB SOURCES "src/main/cpp/*.cpp")
-file(GLOB SOURCES "src/main/cpp/nativeClient.cpp")
+file(GLOB SOURCES "src/main/cpp/*.cpp")
+#file(GLOB SOURCES "src/main/cpp/nativeClient.cpp")
 
 #配置so库输出路径，但是这个配置必须放在add_library之前，否则不生效,其中libs，以及libs下面的所有目录都不需要手动创建，只要在
 #CMakelist配置好就会自动生成
@@ -17,6 +17,9 @@ set(my_lib_path ${CMAKE_SOURCE_DIR}/src/main/cpp/libs/${ANDROID_ABI})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${my_lib_path}")
 message("CMAKE_SOURCE_DIR= "${CMAKE_SOURCE_DIR})
 message("CMAKE_CXX_FLAGS= "${CMAKE_CXX_FLAGS})
+
+#定义宏开关
+add_compile_definitions(ENABLE_JNI_ONLOAD)
 
 add_library(native SHARED ${SOURCES})
 

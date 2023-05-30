@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getName();
 
     static {
-        System.loadLibrary("native");
+        System.loadLibrary("tigerPlayer");
     }
 
     private ActivityMainBinding binding;
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         // method8();
         // method9();
         //method10();
-        method11();
+       // method11();
     }
 
     private void method11() {

@@ -5,7 +5,7 @@
 #include <android/log.h>
 #include "util.h"
 
-#ifdef ENABLE_JNI_ONLOAD
+#ifdef ENABLE_TEST_JNI_ONLOAD
 
 using namespace std;
 jclass clazz;

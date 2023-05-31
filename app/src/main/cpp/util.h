@@ -20,6 +20,9 @@
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,TAG ,__VA_ARGS__) // 定义LOGF类型
 
 
+#define DELETE(obj) if(obj){delete obi;obj = 0;}
+
+
 //标记线程 因为子线程需要attach
 #define THREAD_MAIN 1
 #define THREAD_CHILD 2

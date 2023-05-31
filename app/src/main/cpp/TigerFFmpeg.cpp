@@ -12,7 +12,7 @@ TigerFFmpeg::TigerFFmpeg(CallJavaHelper *callJavaHelper, char *dataSource) : cal
     stpcpy(this->data_source, dataSource);
     isPlaying = 0;
     this->duration = 0;
-    this->isSeek = 0;//todo
+    this->isSeek = 0;//todo 是否需要设置为0
     pthread_mutex_init(&this->seekLock, nullptr);
 }
 

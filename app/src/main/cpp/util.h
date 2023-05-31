@@ -19,8 +19,8 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG ,__VA_ARGS__) // 定义LOGE类型
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,TAG ,__VA_ARGS__) // 定义LOGF类型
 
-
-#define DELETE(obj) if(obj){delete obi;obj = 0;}
+//宏函数
+#define DELETE(obj) if(obj) { delete obj; obj = nullptr; }
 
 
 //标记线程 因为子线程需要attach

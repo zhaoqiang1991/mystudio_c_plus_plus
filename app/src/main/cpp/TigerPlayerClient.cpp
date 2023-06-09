@@ -8,7 +8,9 @@
 #include <jni.h>
 #include "util.h"
 #include "CallJavaHelper.h"
+#include "TigerFFmpeg.h"
 
+TigerFFmpeg *fFmpeg = 0;
 JavaVM *_vm;
 static const char *className = "com/example/myapplication/player/TigerPlayer";
 
@@ -21,8 +23,15 @@ void native_prepare(JNIEnv *env, jobject thiz, jstring data_source) {
     LOGD("================================================");
     const char *dataSource = env->GetStringUTFChars(data_source, 0);
     CallJavaHelper *callJavaHelper = new CallJavaHelper(_vm, env, &thiz);
+    fFmpeg = new TigerFFmpeg(callJavaHelper, dataSource);
+    //todo 设置渲染器
+   // fFmpeg.setReaderCallBack()
+    //开始准备
+    fFmpeg->prepare();
 
-    LOGD("data_source = %s\n", dataSource);
+    //回收资源
+    env->ReleaseStringUTFChars(data_source,dataSource);
+    LOGD("url = %s\n", dataSource);
 }
 
 /**

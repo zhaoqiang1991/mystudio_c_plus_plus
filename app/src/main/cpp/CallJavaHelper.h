@@ -20,7 +20,7 @@ public:
     virtual ~CallJavaHelper();
 
 
-    void onError(int threadId, string errorDesc);
+    void onError(int threadId, jstring errorDesc);
 
     void onProgress(int threadId,int progress);
 

@@ -28,18 +28,18 @@ CallJavaHelper::~CallJavaHelper() {
 
 }
 
-void CallJavaHelper::onError(int threadId, string errorDesc) {
+void CallJavaHelper::onError(int threadId, jstring errorDesc) {
     if (threadId == THREAD_CHILD) {
         //子线程,必须切把navite线程挂在到javavm线程，因为JNIEnv不能跨线程调用
         jint status = _vm->AttachCurrentThread(&this->env, 0);
         if (status > 0) {
-            LOGD("onError errorDesc = %s\n", errorDesc.c_str());
+            LOGD("onError errorDesc = %s\n", errorDesc);
             return;
         }
-        this->env->CallVoidMethod(this->jobj, this->jmid_onerror);
+        this->env->CallVoidMethod(this->jobj, this->jmid_onerror,threadId,errorDesc);
         _vm->DetachCurrentThread();
     } else {
-        this->env->CallVoidMethod(this->jobj, this->jmid_onerror);
+        this->env->CallVoidMethod(this->jobj, this->jmid_onerror,threadId,errorDesc);
     }
 }
 

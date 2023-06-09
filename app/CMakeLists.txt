@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22.1)
 #比如 System.loadLibrary("native");
 project("tigerPlayer")
 #指定头文件的搜索路径 ,这个必须放在add_library之前，就是配置的信息一定要放在最前面
-include_directories(src/main/cpp/*.h,src/main/cpp/include)
+include_directories(src/main/cpp/include)
 #指定编译路径
 file(GLOB SOURCES "src/main/cpp/*.cpp")
 #file(GLOB SOURCES "src/main/cpp/nativeClient.cpp")

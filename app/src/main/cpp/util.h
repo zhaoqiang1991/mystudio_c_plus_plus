@@ -29,15 +29,15 @@
 
 //错误代码
 //打不开视频
-#define FFMPEG_CAN_NOT_OPEN_URL 1
+#define FFMPEG_CAN_NOT_OPEN_URL "ffmpeg_can_not_open_url"
 //找不到流媒体
-#define FFMPEG_CAN_NOT_FIND_STREAMS 2
+#define FFMPEG_CAN_NOT_FIND_STREAMS "ffmpeg_can_not_find_streams"
 //找不到解码器
-#define FFMPEG_FIND_DECODER_FAIL 3
+#define FFMPEG_FIND_DECODER_FAIL "ffmpeg_find_decoder_fail"
 //无法根据解码器创建上下文
-#define FFMPEG_ALLOC_CODEC_CONTEXT_FAIL 4
+#define FFMPEG_ALLOC_CODEC_CONTEXT_FAIL "ffmpeg_alloc_codec_context_fail"
 //根据流信息 配置上下文参数失败
-#define FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL 6
+#define FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL "ffmpeg_codec_context_parameters_fail"
 //打开解码器失败
 #define FFMPEG_OPEN_DECODER_FAIL 7
 //没有音视频

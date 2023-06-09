@@ -26,13 +26,13 @@ public class PlayerActivity extends AppCompatActivity {
         tigerPlayer.setSurfaceView(surfaceView);
         playUrl = "http://vfx.mtime.cn/Video/2021/07/10/mp4/210710171112971120.mp4";
         tigerPlayer.setDataSource(playUrl);
-        tigerPlayer.prepare();
+
         Log.d(TAG, "==========PlayerActivity onCreate ");
         tigerPlayer.setOnPrepareListener(new OnPrepareListener() {
             @Override
             public void onPrepared() {
                 Log.d(TAG, "==========onPrepared ");
-                //native层播放器准备好以后就可以start了
+                //native层播放器准备好以后就可以通知Java层开始start了
                 tigerPlayer.start();
             }
         });
@@ -53,6 +53,11 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        tigerPlayer.prepare();
+    }
 
     @Override
     protected void onStop() {

@@ -4,7 +4,6 @@
 
 #include "TigerFFmpeg.h"
 #include "util.h"
-#include "BaseChannel.h"
 
 
 TigerFFmpeg::TigerFFmpeg(CallJavaHelper *callJavaHelper, const char *dataSource) : callJavaHelper(

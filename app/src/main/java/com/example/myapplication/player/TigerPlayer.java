@@ -68,6 +68,28 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     }
 
+    public void onError(int threadId, String errorDesc) {
+        if (mOnErrorListener != null) {
+            //回调到java层
+            mOnErrorListener.onError(threadId, errorDesc);
+        }
+    }
+
+    public void onPrepared() {
+        //回调到java层
+        if (mOnPrepareListener != null) {
+            mOnPrepareListener.onPrepared();
+        }
+    }
+
+
+    public void onProgress(int progress) {
+        //回调到java层
+        if (mOnProgressListener != null) {
+            mOnProgressListener.onProgress(progress);
+        }
+    }
+
     public native void _prepare(String url);
 
     public native void _start();

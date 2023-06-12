@@ -5,6 +5,8 @@
 #include "TigerFFmpeg.h"
 #include "util.h"
 #include "BaseChannel.h"
+#include "VideoChannel.h"
+#include "AudioChannel.h"
 
 
 TigerFFmpeg::TigerFFmpeg(CallJavaHelper *callJavaHelper, const char *dataSource) : callJavaHelper(

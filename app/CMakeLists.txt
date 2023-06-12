@@ -6,8 +6,8 @@ project("tigerPlayer")
 #指定头文件的搜索路径 ,这个必须放在add_library之前，就是配置的信息一定要放在最前面
 include_directories(src/main/cpp/include)
 #指定编译路径
-file(GLOB SOURCES "src/main/cpp/*.cpp")
-#file(GLOB SOURCES "src/main/cpp/nativeClient.cpp")
+file(GLOB SOURCE src/main/cpp/*.cpp)
+#file(GLOB SOURCE "src/main/cpp/nativeClient.cpp")
 
 #配置so库输出路径，但是这个配置必须放在add_library之前，否则不生效,其中libs，以及libs下面的所有目录都不需要手动创建，只要在
 #CMakelist配置好就会自动生成
@@ -24,7 +24,7 @@ message("CMAKE_CXX_FLAGS= "${CMAKE_CXX_FLAGS})
 #add_compile_definitions(ENABLE_JNI_ONLOAD)
 add_definitions(-DENABLE_JNI_ONLOAD)
 
-add_library(tigerPlayer SHARED ${SOURCES})
+add_library(tigerPlayer SHARED ${SOURCE})
 
 
 find_library(

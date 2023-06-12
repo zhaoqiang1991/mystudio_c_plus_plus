@@ -7,6 +7,7 @@
 using namespace std;
 
 #include "CallJavaHelper.h"
+#include "safe_queue.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -16,14 +17,67 @@ extern "C" {
 class BaseChannel {
 public:
 
-    BaseChannel(int channleId, AVCodecContext *avCodecContext, CallJavaHelper *javaCallHelper);
+    BaseChannel(int channleId, AVCodecContext *avCodecContext, CallJavaHelper *javaCallHelper,
+                AVRational time_base);
 
     virtual ~BaseChannel();
 
+    //是否在播放
+    virtual void play() = 0;
+
+    //是否已经暂停
+    virtual void stop() = 0;
+
+    //释放AVFrame
+    static void releaseAvFrame(AVFrame *&frame) {
+        if (frame) {
+            //如果没有释放，那么就释放frame
+            av_frame_free(&frame);
+            frame = nullptr;
+        }
+    }
+
+    //释放AVPacket
+    static void releaseAvPacket(AVPacket *&packet) {
+        if (packet) {
+            //如果没有释放，那么就释放frame
+            av_packet_free(&packet);
+            packet = nullptr;
+        }
+    }
+
+
+    //清空两个队列
+    void clear() {
+        pkt_queue.clear();
+        frame_queue.clear();
+    }
+
+    //暂停队列
+    void stopWork() {
+        pkt_queue.setWork(0);
+        frame_queue.setWork(0);
+    }
+
+    //开启队列
+    void startWork() {
+        pkt_queue.setWork(1);
+        frame_queue.setWork(1);
+    }
+
 public:
-    int channleId;
+    volatile int channleId;
     AVCodecContext *avCodecContext;
     CallJavaHelper *javaCallHelper;
+    volatile bool isPlaying = 0;
+    //时间基
+    AVRational time_base;
+    float clock = 0;
+
+    //视频流解码出来的packet包
+    SafeQueue<AVPacket *> pkt_queue;
+    //视频流解码出来的一帧数据
+    SafeQueue<AVFrame *> frame_queue;
 };
 
 

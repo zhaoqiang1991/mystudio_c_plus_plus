@@ -10,9 +10,10 @@
 
 typedef void (*RenderFrame)(uint8_t *, int, int, int);
 
-class VideoChannel /*: public BaseChannel*/ {
+class VideoChannel : public BaseChannel {
 public:
-    VideoChannel(int channleId);
+    VideoChannel(int channleId, AVCodecContext *avCodecContext, CallJavaHelper *javaCallHelper,
+                 AVRational timeBase, int fps);
 
 public:
     int fps;

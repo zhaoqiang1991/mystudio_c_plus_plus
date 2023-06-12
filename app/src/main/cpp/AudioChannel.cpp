@@ -5,3 +5,8 @@
 #include "AudioChannel.h"
 
 
+AudioChannel::AudioChannel(int channleId, AVCodecContext *avCodecContext,
+                           CallJavaHelper *javaCallHelper, AVRational timeBase)
+        : BaseChannel(channleId, avCodecContext, javaCallHelper, timeBase) {
+
+}

@@ -7,8 +7,10 @@
 
 #include "BaseChannel.h"
 
-class AudioChannel /*: public BaseChannel*/ {
+class AudioChannel : public BaseChannel {
 public:
+    AudioChannel(int channleId, AVCodecContext *avCodecContext, CallJavaHelper *javaCallHelper,
+                 AVRational timeBase);
 
 public:
 

@@ -35,10 +35,10 @@ void TigerFFmpeg::prepareFFmpeg() {
     //2.代表一个 视频/音频 包含了视频、音频的各种信息
     formatContext = avformat_alloc_context();
     //3.设置超时时间
-    AVDictionary **pm = nullptr;
-    av_dict_set(pm, "timeout", "3000000", 0);
+    AVDictionary *pm = nullptr;
+    av_dict_set(&pm, "timeout", "3000000", 0);
     //4.设置输入文件的封装格式
-    int status = avformat_open_input(&formatContext, url, nullptr, pm);
+    int status = avformat_open_input(&formatContext, url, nullptr, &pm);
     if (status != 0) {
         //打开失败，需要回调到Java层
         if (callJavaHelper != nullptr) {

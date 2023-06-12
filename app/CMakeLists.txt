@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.10.2)
 
 #这个project引用的名字就是未来在java工程里面引用到的库名字
 #比如 System.loadLibrary("native");
@@ -21,7 +21,8 @@ message("CMAKE_SOURCE_DIR= "${CMAKE_SOURCE_DIR})
 message("CMAKE_CXX_FLAGS= "${CMAKE_CXX_FLAGS})
 
 #定义宏开关
-add_compile_definitions(ENABLE_JNI_ONLOAD)
+#add_compile_definitions(ENABLE_JNI_ONLOAD)
+add_definitions(-DENABLE_JNI_ONLOAD)
 
 add_library(tigerPlayer SHARED ${SOURCES})
 
@@ -30,7 +31,7 @@ find_library(
         log-lib
         log)
 
-target_link_libraries(
+#[[target_link_libraries(
         tigerPlayer
         avfilter
         avformat
@@ -41,4 +42,14 @@ target_link_libraries(
         z
         OpenSLES
         android
-        ${log-lib})
+        ${log-lib})]]
+
+
+target_link_libraries(
+        tigerPlayer
+        avfilter avformat    avcodec  avutil  swresample swscale
+        # ffmpeg
+        z
+        OpenSLES
+        android
+        ${log-lib} )

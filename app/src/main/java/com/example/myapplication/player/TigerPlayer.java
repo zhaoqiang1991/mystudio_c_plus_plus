@@ -3,6 +3,7 @@ package com.example.myapplication.player;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+
 import androidx.annotation.NonNull;
 
 import com.example.myapplication.listener.OnErrorListener;
@@ -29,15 +30,15 @@ public class TigerPlayer implements SurfaceHolder.Callback {
      * 准备阶段
      */
     public void prepare() {
-        _prepare(url);
+        native_prepare(url);
     }
 
     public void start() {
-        _start();
+        native_start();
     }
 
     public void stop() {
-        _stop();
+        native_stop();
     }
 
 
@@ -90,11 +91,11 @@ public class TigerPlayer implements SurfaceHolder.Callback {
         }
     }
 
-    public native void _prepare(String url);
+    private native void native_prepare(String url);
 
-    public native void _start();
+    private native void native_start();
 
-    public native void _stop();
+    private native void native_stop();
 
-    public native void _seek(int progress);
+    private native void native_seek(int progress);
 }

@@ -18,34 +18,34 @@ static const char *className = "com/example/myapplication/player/TigerPlayer";
 /**
  * 本地方法
  */
-void native_prepare(JNIEnv *env, jobject thiz, jstring data_source) {
+static void player_native_prepare(JNIEnv *env, jobject thiz, jstring data_source) {
     LOGD("======native_prepare 调用了");
     LOGD("================================================");
     const char *dataSource = env->GetStringUTFChars(data_source, 0);
     CallJavaHelper *callJavaHelper = new CallJavaHelper(_vm, env, &thiz);
     fFmpeg = new TigerFFmpeg(callJavaHelper, dataSource);
     //todo 设置渲染器
-   // fFmpeg.setReaderCallBack()
+    // fFmpeg.setReaderCallBack()
     //开始准备
     fFmpeg->prepare();
 
     //回收资源
-    env->ReleaseStringUTFChars(data_source,dataSource);
+    env->ReleaseStringUTFChars(data_source, dataSource);
     LOGD("url = %s\n", dataSource);
 }
 
 /**
  * start
  */
-void native_start(JNIEnv *env, jobject thiz) {
-    LOGD("======native_start 调用了");
+void player_native_start(JNIEnv *env, jobject thiz) {
+    LOGD("======player_native_start 调用了");
     LOGD("================================================");
 }
 
 /**
  * start
  */
-void native_stop(JNIEnv *env, jobject thiz) {
+void player_native_stop(JNIEnv *env, jobject thiz) {
     LOGD("======native_stop 调用了");
     LOGD("================================================");
 }
@@ -54,7 +54,7 @@ void native_stop(JNIEnv *env, jobject thiz) {
 /**
  * start
  */
-void native_seek(JNIEnv *env, jobject thiz, jint progress) {
+void player_native_seek(JNIEnv *env, jobject thiz, jint progress) {
     LOGD("======native_seek 调用了");
     LOGD("================================================");
     LOGD("progress = %d\n", progress);
@@ -67,10 +67,10 @@ void native_seek(JNIEnv *env, jobject thiz, jint progress) {
  * 第三个参数:本地方法
  */
 static const JNINativeMethod jniNativeMethod[] = {
-        {"_prepare", "(Ljava/lang/String;)V", (void *) native_prepare},
-        {"_start",   "()V",                   (void *) native_start},
-        {"_stop",    "()V",                   (void *) native_stop},
-        {"_seek",    "(I)V",                  (void *) native_seek}
+        {"native_prepare", "(Ljava/lang/String;)V", (void *) player_native_prepare},
+        {"native_start",   "()V",                   (void *) player_native_start},
+        {"native_stop",    "()V",                   (void *) player_native_stop},
+        {"native_seek",    "(I)V",                  (void *) player_native_seek}
 
 };
 
@@ -95,3 +95,23 @@ int JNI_OnLoad(JavaVM *vm, void *r) {
 
 #endif
 
+
+/*
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myapplication_player_TigerPlayer_native_1prepare(JNIEnv *env, jobject thiz,
+                                                                  jstring data_source) {
+    LOGD("======native_prepare 调用了");
+    LOGD("================================================");
+    const char *dataSource = env->GetStringUTFChars(data_source, 0);
+    CallJavaHelper *callJavaHelper = new CallJavaHelper(_vm, env, &thiz);
+    fFmpeg = new TigerFFmpeg(callJavaHelper, dataSource);
+    //todo 设置渲染器
+    // fFmpeg.setReaderCallBack()
+    //开始准备
+    fFmpeg->prepare();
+
+    //回收资源
+    env->ReleaseStringUTFChars(data_source, dataSource);
+    LOGD("url = %s\n", dataSource);
+}*/

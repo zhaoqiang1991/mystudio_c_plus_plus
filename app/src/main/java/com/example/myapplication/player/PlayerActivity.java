@@ -64,4 +64,9 @@ public class PlayerActivity extends AppCompatActivity {
         super.onStop();
         tigerPlayer.stop();
     }
+
+    private native void cc();
+
+    public native void start();
+
 }

@@ -143,6 +143,12 @@ void TigerFFmpeg::start() {
         videoChannel->isPlaying = isPlaying;
         videoChannel->play();
     }
+
+    if (audioChannel) {
+        audioChannel->packet_queue.setWork(1);
+        audioChannel->isPlaying = isPlaying;
+        audioChannel->play();
+    }
     pthread_create(&pid_play, nullptr, play, this);
 }
 

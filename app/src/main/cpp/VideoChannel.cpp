@@ -58,7 +58,7 @@ void VideoChannel::decodePacket() {
 
         //把数据丢给解码器， 丢给ffmpeg的是一个包，拿出来的是一帧数据  send -->receive
         ref = avcodec_send_packet(this->avCodecContext, packet);
-        releaseAvPacket(packet);
+        releaseAvPacket(&packet);
         if (ref == AVERROR(EAGAIN)) {
             //重试 解码器里面的数据太多太多了，需要读取一些数据才能够存放，缓存里面放不下这些包了
             continue;
@@ -81,7 +81,7 @@ void VideoChannel::decodePacket() {
         frame_queue.push(avFrame);
     }
 
-    releaseAvPacket(packet);
+    releaseAvPacket(&packet);
 }
 
 void VideoChannel::render() {
@@ -112,11 +112,11 @@ void VideoChannel::render() {
         renderFrame(dst_data[0],dst_linesize[0],avCodecContext->width,avCodecContext->height);
 
         //avFrame用完就没有用了，就可以释放了
-        releaseAvFrame(avFrame);
+        releaseAvFrame(&avFrame);
     }
 
     av_freep(&dst_data[0]);
-    releaseAvFrame(avFrame);
+    releaseAvFrame(&avFrame);
 }
 
 void VideoChannel::setRenderFrameCallback(RenderFrame callback) {

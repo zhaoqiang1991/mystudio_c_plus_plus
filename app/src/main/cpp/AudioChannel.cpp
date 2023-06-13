@@ -41,16 +41,16 @@ void *audio_play(void *args) {
 
 void AudioChannel::play() {
     //构造函数里面已经设置了工作队列是播放状态
-    isPlaying = 1;
     //特别重要 特别重要 特别重要
     startWork();
 
     //重采样器
     swrContext = swr_alloc_set_opts(0, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, out_sample_rate,
                                     avCodecContext->channel_layout,
-                                    avCodecContext->sample_fmt, avCodecContext->bit_rate, 0, 0);
+                                    avCodecContext->sample_fmt, avCodecContext->sample_rate, 0, 0);
     //必须需要初始化
     swr_init(swrContext);
+    isPlaying = 1;
     //1. 解码
     pthread_create(&pid_audio_decode, 0, audio_decode, this);
     //2.播放

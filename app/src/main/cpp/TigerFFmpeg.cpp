@@ -138,16 +138,16 @@ void *play(void *args) {
 void TigerFFmpeg::start() {
     isPlaying = 1;
     //因为需要从流中不断的读取网络上数据，而且外部有可能是在主线程中调用，因此需要单独的开启一个线程
-    if (videoChannel) {
-        videoChannel->packet_queue.setWork(1);
-        videoChannel->isPlaying = isPlaying;
-        videoChannel->play();
-    }
-
     if (audioChannel) {
         audioChannel->packet_queue.setWork(1);
         audioChannel->isPlaying = isPlaying;
         audioChannel->play();
+    }
+
+    if (videoChannel) {
+        videoChannel->packet_queue.setWork(1);
+        videoChannel->isPlaying = isPlaying;
+        videoChannel->play();
     }
     pthread_create(&pid_play, nullptr, play, this);
 }

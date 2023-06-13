@@ -28,8 +28,7 @@ void *render_task(void *args) {
 
 void VideoChannel::play() {
     isPlaying = 1;
-    frame_queue.setWork(1);
-    pkt_queue.setWork(1);
+    startWork();
     //1. 解码
     pthread_create(&pid_decode, nullptr, decode_task, this);
 

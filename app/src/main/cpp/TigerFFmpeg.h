@@ -7,6 +7,8 @@
 
 
 #include "CallJavaHelper.h"
+#include "AudioChannel.h"
+#include "VideoChannel.h"
 
 extern "C" {
 //因为这两个库是c语言写的，但是现在我们是在c++里面应用，所以要指导gcc/g++把这个
@@ -26,7 +28,7 @@ class TigerFFmpeg {
 public:
     TigerFFmpeg(CallJavaHelper *callJavaHelper, const char *dataSource);
 
-   //TigerFFmpeg(CallJavaHelper *callJavaHelper, char *dataSource);
+    //TigerFFmpeg(CallJavaHelper *callJavaHelper, char *dataSource);
 
     virtual ~TigerFFmpeg();
 
@@ -35,12 +37,15 @@ public:
     void prepareFFmpeg();
 
     void start();
+    void _start() const;
 
     void stop();
 
     void seek(int progress);
 
     static void *prepare_FFmpeg(void *args);
+
+    void setRenderFrameCallback(RenderFrame callback);
 
 public:
     CallJavaHelper *callJavaHelper;
@@ -52,6 +57,10 @@ public:
     pthread_t pid_stop;
     AVFormatContext *formatContext = nullptr;
 
+    //声明一个指针的时候，必须需要初始化，不然会出现各种奇怪问题
+    AudioChannel *audioChannel = nullptr;
+    VideoChannel *videoChannel = nullptr;
+    RenderFrame callback = nullptr;
 
     pthread_mutex_t seekLock;
 

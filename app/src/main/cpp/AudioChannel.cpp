@@ -9,4 +9,17 @@ AudioChannel::AudioChannel(int channleId, AVCodecContext *avCodecContext,
                            CallJavaHelper *javaCallHelper, AVRational timeBase)
         : BaseChannel(channleId, avCodecContext, javaCallHelper, timeBase) {
 
+
+}
+
+AudioChannel::~AudioChannel() {
+
+}
+
+void AudioChannel::play() {
+
+}
+
+void AudioChannel::stop() {
+
 }

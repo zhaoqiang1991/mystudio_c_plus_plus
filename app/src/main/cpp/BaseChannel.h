@@ -28,7 +28,7 @@ public:
     //是否已经暂停
     virtual void stop() = 0;
 
-    //释放AVFrame
+    //释放AVFrame  指针的指针可以修改传递进来的指针的指向，来修改它
     static void releaseAvFrame(AVFrame *&frame) {
         if (frame) {
             //如果没有释放，那么就释放frame

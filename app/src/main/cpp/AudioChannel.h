@@ -12,6 +12,12 @@ public:
     AudioChannel(int channleId, AVCodecContext *avCodecContext, CallJavaHelper *javaCallHelper,
                  AVRational timeBase);
 
+    ~AudioChannel() override;
+
+    void play() override;
+
+    void stop() override;
+
 public:
 
 };

@@ -29,7 +29,7 @@ TigerFFmpeg::~TigerFFmpeg() {
  * 因为准备阶段是一个耗时的过程，所以需要单独开启一个线程
  */
 void TigerFFmpeg::prepare() {
-    pthread_create(&this->pid_prepare, 0, prepare_FFmpeg, this);
+    pthread_create(&this->pid_prepare, nullptr, prepare_FFmpeg, this);
 }
 
 void TigerFFmpeg::prepareFFmpeg() {
@@ -38,10 +38,11 @@ void TigerFFmpeg::prepareFFmpeg() {
     //2.代表一个 视频/音频 包含了视频、音频的各种信息
     formatContext = avformat_alloc_context();
     //3.设置超时时间
-    AVDictionary *pm = nullptr;
-    av_dict_set(&pm, "timeout", "3000000", 0);
+    AVDictionary *opts = nullptr;
+    av_dict_set(&opts, "timeout", "3000000", 0);
     //4.设置输入文件的封装格式
-    int status = avformat_open_input(&formatContext, url, nullptr, &pm);
+    int status = avformat_open_input(&formatContext, url, nullptr, &opts);
+    LOGE("%s open %d  %s", url, status, av_err2str(status));
     if (status != 0) {
         //打开失败，需要回调到Java层
         if (callJavaHelper != nullptr) {
@@ -87,7 +88,14 @@ void TigerFFmpeg::prepareFFmpeg() {
             }
             return;
         }
-        //10.打开解码器
+        //10 赋值参数,这一步特别重要
+        if(avcodec_parameters_to_context(codecContext,codecpar) < 0 ){
+            if (callJavaHelper)
+                callJavaHelper->onError(THREAD_CHILD,(jstring) FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL);
+            return;
+        }
+
+        //11.打开解码器
         //@return zero on success, a negative value on error
         if (avcodec_open2(codecContext, avCodec, nullptr) != 0) {
             if (callJavaHelper != nullptr) {
@@ -101,8 +109,13 @@ void TigerFFmpeg::prepareFFmpeg() {
         AVRational base = formatContext->streams[i]->time_base;
         if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             //音频流
+            LOGE("=========创建audio");
+            audioChannel = new AudioChannel(i, codecContext, callJavaHelper, base);
         } else if (codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             //视频流
+            LOGE("=========创建vidio");
+            videoChannel = new VideoChannel(i, codecContext, callJavaHelper, base, 0);
+            videoChannel->setRenderFrameCallback(callback);
         }
 
 
@@ -114,8 +127,23 @@ void TigerFFmpeg::prepareFFmpeg() {
 
 }
 
-void TigerFFmpeg::start() {
 
+void *play(void *args) {
+    auto *tigerFFmpeg = static_cast<TigerFFmpeg *>(args);
+    tigerFFmpeg->_start();
+    //线程必须要return，不然会出现各种奇怪的问题，很难排查
+    return nullptr;
+}
+
+void TigerFFmpeg::start() {
+    isPlaying = 1;
+    //因为需要从流中不断的读取网络上数据，而且外部有可能是在主线程中调用，因此需要单独的开启一个线程
+    if (videoChannel) {
+        videoChannel->pkt_queue.setWork(1);
+        videoChannel->isPlaying = isPlaying;
+        videoChannel->play();
+    }
+    pthread_create(&pid_play, nullptr, play, this);
 }
 
 void TigerFFmpeg::stop() {
@@ -127,7 +155,36 @@ void TigerFFmpeg::seek(int progress) {
 }
 
 void *TigerFFmpeg::prepare_FFmpeg(void *args) {
-    TigerFFmpeg *tigerFFmpeg = static_cast<TigerFFmpeg *>(args);
+    auto *tigerFFmpeg = static_cast<TigerFFmpeg *>(args);
     tigerFFmpeg->prepareFFmpeg();
     return nullptr;
+}
+
+void TigerFFmpeg::_start() const {
+    int ref = 0;
+    while (isPlaying) {
+        //如果是在播放，需要不断的从流中读取数据
+        AVPacket *packet = av_packet_alloc();
+
+        //从媒体文件中读取一帧数据
+        ref = av_read_frame(formatContext, packet);
+        if (ref == 0) {
+            //读取成功
+            if (audioChannel && packet->stream_index == audioChannel->channleId) {
+                //表示音频
+            } else if (videoChannel && packet->stream_index == videoChannel->channleId) {
+                //表示视频
+                //读取到一帧数据，就放到视频队列里面
+                videoChannel->pkt_queue.push(packet);
+            }
+        } else if (ref == AVERROR_EOF) {
+            ////读取完毕
+        } else {
+            //读取失败
+        }
+    }
+}
+
+void TigerFFmpeg::setRenderFrameCallback(RenderFrame callback) {
+    this->callback = callback;
 }

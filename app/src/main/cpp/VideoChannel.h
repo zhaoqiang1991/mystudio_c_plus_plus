@@ -8,6 +8,11 @@
 #include "BaseChannel.h"
 #include <pthread.h>
 
+extern "C" {
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+}
+
 typedef void (*RenderFrame)(uint8_t *, int, int, int);
 
 class VideoChannel : public BaseChannel {
@@ -15,12 +20,27 @@ public:
     VideoChannel(int channleId, AVCodecContext *avCodecContext, CallJavaHelper *javaCallHelper,
                  AVRational timeBase, int fps);
 
+    ~VideoChannel() override;
+
+    void play() override;
+
+    void stop() override;
+
+    void decodePacket();
+
+    void render();
+
+    void setRenderFrameCallback(RenderFrame callback);
+
+
 public:
     int fps;
-    pthread_t pid_video_play;
-    pthread_t pid_synchronize;
+    pthread_t pid_decode;
+    pthread_t pid_render;
     //渲染器
-    RenderFrame renderFrame;
+    RenderFrame renderFrame = nullptr;
+
+    SwsContext *swsContext = nullptr;
 };
 
 

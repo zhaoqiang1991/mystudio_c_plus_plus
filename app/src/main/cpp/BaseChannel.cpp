@@ -8,8 +8,8 @@ BaseChannel::BaseChannel(int channleId, AVCodecContext *avCodecContext,
                          CallJavaHelper *javaCallHelper, AVRational time_base) :
         channleId(channleId), avCodecContext(avCodecContext), time_base(time_base) {
     //注册回收packet函数
-    pkt_queue.setReleaseHandle(releaseAvPacket);
-    frame_queue.setReleaseHandle(releaseAvFrame);
+   /* pkt_queue.setReleaseHandle(releaseAvPacket);
+    frame_queue.setReleaseHandle(releaseAvFrame);*/
 
 }
 

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 import com.example.myapplication.R;
 import com.example.myapplication.listener.OnErrorListener;
@@ -33,6 +34,12 @@ public class PlayerActivity extends AppCompatActivity {
             public void onPrepared() {
                 Log.d(TAG, "==========onPrepared ");
                 //native层播放器准备好以后就可以通知Java层开始start了
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(PlayerActivity.this,"native回到到Java层，可以开始播放了",Toast.LENGTH_LONG).show();
+                    }
+                });
                 tigerPlayer.start();
             }
         });
@@ -64,9 +71,5 @@ public class PlayerActivity extends AppCompatActivity {
         super.onStop();
         tigerPlayer.stop();
     }
-
-    private native void cc();
-
-    public native void start();
 
 }

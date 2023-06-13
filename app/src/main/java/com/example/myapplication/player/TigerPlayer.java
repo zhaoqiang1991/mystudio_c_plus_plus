@@ -1,5 +1,6 @@
 package com.example.myapplication.player;
 
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -17,6 +18,7 @@ public class TigerPlayer implements SurfaceHolder.Callback {
     private OnPrepareListener mOnPrepareListener;
     private OnErrorListener mOnErrorListener;
     private OnProgressListener mOnProgressListener;
+    private SurfaceHolder holder;
 
     public void setDataSource(String url) {
         this.url = url;
@@ -24,6 +26,8 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     public void setSurfaceView(SurfaceView surfaceView) {
         this.mSurfaceView = surfaceView;
+        holder = surfaceView.getHolder();
+        holder.addCallback(this);
     }
 
     /**
@@ -61,7 +65,7 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-
+        native_setSurface(holder.getSurface());
     }
 
     @Override
@@ -98,4 +102,7 @@ public class TigerPlayer implements SurfaceHolder.Callback {
     private native void native_stop();
 
     private native void native_seek(int progress);
+
+    //设置可用的画布
+    private native void native_setSurface(Surface surface);
 }

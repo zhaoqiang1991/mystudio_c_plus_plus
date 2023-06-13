@@ -121,78 +121,114 @@ void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
  * 播放音频
  */
 void AudioChannel::_play() {
-    //创建引擎
     SLresult result;
-    // 创建引擎engineObject
-    result = slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);
+
+    //1. create engine 创建引擎
+    result = slCreateEngine(&engineObject, 0, nullptr, 0, NULL, NULL);
     if (SL_RESULT_SUCCESS != result) {
         return;
     }
-    // 初始化引擎engineObject
+    //2. realize the engine  初始化引擎
     result = (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         return;
     }
-    // 获取引擎接口engineEngine
-    result = (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE,
-                                           &engineInterface);
+    //3.获取调用接口
+    result = (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineEngine);
     if (SL_RESULT_SUCCESS != result) {
         return;
     }
 
-    // 创建混音器outputMixObject
-    result = (*engineInterface)->CreateOutputMix(engineInterface, &outputMixObject, 0, 0, 0);
+    //4.创建混音器 create output mix, with environmental reverb specified as a non-required
+    // interface
+    /* const SLInterfaceID ids[1] = {SL_IID_ENVIRONMENTALREVERB};
+     const SLboolean req[1] = {SL_BOOLEAN_FALSE};*/
+    result = (*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 0, 0, 0);
     if (SL_RESULT_SUCCESS != result) {
         return;
     }
 
-    // 初始化混音器outputMixObject
+    //5.初始化混音器 realize the output mix
     result = (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         return;
     }
 
+    // get the environmental reverb interface
+    // this could fail if the environmental reverb effect is not available,
+    // either because the feature is not present, excessive CPU load, or
+    // the required MODIFY_AUDIO_SETTINGS permission was not requested and granted
+    /* result = (*outputMixObject)->GetInterface(outputMixObject, SL_IID_ENVIRONMENTALREVERB,
+                                               &outputMixEnvironmentalReverb);*/
+    if (SL_RESULT_SUCCESS == result) {//todo 可以不需要，不是必须的步骤
+        //6. 设置混音器效果
+        /*result = (*outputMixEnvironmentalReverb)->SetEnvironmentalReverbProperties(
+                outputMixEnvironmentalReverb, &reverbSettings);*/
+    }
 
-    /**
-     * 配置输入声音信息
-     */
-    //创建buffer缓冲类型的队列 2个队列
-    SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
-                                                            2};
+    //7.创建播放器
+    // 7.1 配置输入声音信息 configure audio source
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
     //pcm数据格式
-    SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM, 2, SL_SAMPLINGRATE_44_1, SL_PCMSAMPLEFORMAT_FIXED_16,
-                            SL_PCMSAMPLEFORMAT_FIXED_16,
-                            SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
-                            SL_BYTEORDER_LITTLEENDIAN};
+    SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM, 2,
+                                   SL_SAMPLINGRATE_44_1, SL_PCMSAMPLEFORMAT_FIXED_16,
+                                   SL_PCMSAMPLEFORMAT_FIXED_16,
+                                   SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
+                                   SL_BYTEORDER_LITTLEENDIAN};
 
-    //数据源 将上述配置信息放到这个数据源中
-    SLDataSource slDataSource = {&android_queue, &pcm};
+    //7.2讲上述配置信息加入到数据源中
+    SLDataSource audioSrc = {&loc_bufq, &format_pcm};
 
+    //7.3配置音轨(输出)
+    SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObject};
+    SLDataSink audioSnk = {&loc_outmix, nullptr};
 
-    //设置混音器
-    SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObject};
-    SLDataSink audioSnk = {&outputMix, NULL};
-    //需要的接口
-    const SLInterfaceID ids[1] = {SL_IID_BUFFERQUEUE};
-    const SLboolean req[1] = {SL_BOOLEAN_TRUE};
-    //创建播放器
-    (*engineInterface)->CreateAudioPlayer(engineInterface, &bqPlayerObject, &slDataSource,
-                                          &audioSnk, 1,
-                                          ids, req);
-    //初始化播放器
-    (*bqPlayerObject)->Realize(bqPlayerObject, SL_BOOLEAN_FALSE);
+    /*
+     * create audio player:
+     *     fast audio does not support when SL_IID_EFFECTSEND is required, skip it
+     *     for fast audio case
+     */
+    //7.4需要的接口
+    const SLInterfaceID idss[1] = {SL_IID_BUFFERQUEUE};
+    const SLboolean reqq[1] = {SL_BOOLEAN_TRUE};
 
-//    得到接口后调用  获取Player接口
-    (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerInterface);
+    //7.5 创建播放器
+    result = (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk,1, idss, reqq);
+    if (SL_RESULT_SUCCESS != result) {
+        return;
+    }
 
-//    获得播放器接口
-    (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_BUFFERQUEUE,
-                                    &bqPlayerBufferQueue);
-    //设置回调
-    (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, bqPlayerCallback, this);
-//    设置播放状态
-    (*bqPlayerInterface)->SetPlayState(bqPlayerInterface, SL_PLAYSTATE_PLAYING);
+    // 7.6 初始化播放器realize the player
+    result = (*bqPlayerObject)->Realize(bqPlayerObject, SL_BOOLEAN_FALSE);
+    if (SL_RESULT_SUCCESS != result) {
+        return;
+    }
 
+    // 7.7 获取播放器接口
+    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerPlay);
+    if (SL_RESULT_SUCCESS != result) {
+        return;
+    }
+
+    //7.7 获取播放器回调接口 get the buffer queue interface
+    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_BUFFERQUEUE,
+                                             &bqPlayerBufferQueue);
+    if (SL_RESULT_SUCCESS != result) {
+        return;
+    }
+
+    //7.7 注册播放器回调接口 get the buffer queue interface register callback on the buffer queue
+    result = (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, bqPlayerCallback, this);
+    if (SL_RESULT_SUCCESS != result) {
+        return;
+    }
+
+    //7.8 设置为播放状态
+    result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+    if (SL_RESULT_SUCCESS != result) {
+        return;
+    }
+    //7.9 手动激活回调函数,必须要手动激活
     bqPlayerCallback(bqPlayerBufferQueue, this);
 }
 

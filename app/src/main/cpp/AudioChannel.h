@@ -38,21 +38,15 @@ public:
     pthread_t pid_audio_decode{};
 
     //opensl es SLObjectItf对象
-    /**
-   * opensl es
-   */
-    SLObjectItf engineObject = NULL;
-    SLEngineItf engineInterface = NULL;
-
-    //混音器
-    SLObjectItf outputMixObject = NULL;
-
-    //播放器
-    SLObjectItf bqPlayerObject = NULL;
-    SLPlayItf bqPlayerInterface = NULL;
-    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = NULL;
-
-
+    SLObjectItf engineObject = nullptr;
+    SLEngineItf engineEngine = nullptr;
+    SLObjectItf outputMixObject = nullptr;
+    SLEnvironmentalReverbItf outputMixEnvironmentalReverb = nullptr;
+    SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
+    SLmilliHertz bqPlayerSampleRate = 0;
+    SLObjectItf bqPlayerObject = nullptr;
+    SLPlayItf bqPlayerPlay = nullptr;
+    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = nullptr;
     SwrContext *swrContext = nullptr;
     uint8_t *data = nullptr;
 

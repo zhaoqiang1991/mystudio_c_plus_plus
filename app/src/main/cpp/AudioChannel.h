@@ -18,7 +18,15 @@ public:
 
     void stop() override;
 
+    //解码
+    void decode();
+
+    //播放
+    void _play();
+
 public:
+    pthread_t pid_audio_play;
+    pthread_t pid_audio_decode;
 
 };
 

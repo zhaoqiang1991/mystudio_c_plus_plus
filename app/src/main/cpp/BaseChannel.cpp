@@ -8,7 +8,7 @@ BaseChannel::BaseChannel(int channleId, AVCodecContext *avCodecContext,
                          CallJavaHelper *javaCallHelper, AVRational time_base) :
         channleId(channleId), avCodecContext(avCodecContext), time_base(time_base) {
     //注册回收packet函数
-    pkt_queue.setReleaseCallback(releaseAvPacket);
+    packet_queue.setReleaseCallback(releaseAvPacket);
     frame_queue.setReleaseCallback(releaseAvFrame);
 
 }
@@ -22,9 +22,9 @@ BaseChannel::~BaseChannel() {
         avcodec_free_context(&avCodecContext);
         avCodecContext = nullptr;
     }
-    pkt_queue.clear();
+    packet_queue.clear();
     frame_queue.clear();
-    LOGD("============释放channel:%d %d", pkt_queue.size(), frame_queue.size());
+    LOGD("============释放channel:%d %d", packet_queue.size(), frame_queue.size());
 
 
 }

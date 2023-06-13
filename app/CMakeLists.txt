@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.2)
 #这个project引用的名字就是未来在java工程里面引用到的库名字
 #比如 System.loadLibrary("native");
 project("tigerPlayer")
-#指定头文件的搜索路径 ,这个必须放在add_library之前，就是配置的信息一定要放在最前面
+#指定头文件的搜索路径 ,这个必须 放在add_library之前，就是配置的信息一定要放在最前面
 include_directories(src/main/cpp/include)
 #指定编译路径
 file(GLOB SOURCE src/main/cpp/*.cpp)

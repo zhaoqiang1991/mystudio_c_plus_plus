@@ -49,19 +49,19 @@ public:
 
     //清空两个队列
     void clear() {
-        pkt_queue.clear();
+        packet_queue.clear();
         frame_queue.clear();
     }
 
     //暂停队列
     void stopWork() {
-        pkt_queue.setWork(0);
+        packet_queue.setWork(0);
         frame_queue.setWork(0);
     }
 
     //开启队列
     void startWork() {
-        pkt_queue.setWork(1);
+        packet_queue.setWork(1);
         frame_queue.setWork(1);
     }
 
@@ -75,7 +75,7 @@ public:
     float clock = 0;
 
     //视频流解码出来的packet包
-    SafeQueue<AVPacket *> pkt_queue;
+    SafeQueue<AVPacket *> packet_queue;
     //视频流解码出来的一帧数据
     SafeQueue<AVFrame *> frame_queue;
 };

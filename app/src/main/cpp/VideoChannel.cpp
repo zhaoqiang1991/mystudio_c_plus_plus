@@ -46,7 +46,7 @@ void VideoChannel::decodePacket() {
     int ref = 0;
     while (isPlaying) {
         //读取一个数据包
-        ref = pkt_queue.pop(packet);
+        ref = packet_queue.pop(packet);
         if (!isPlaying) {
             //没有开始播放就需要退出读取包
             break;

@@ -139,7 +139,7 @@ void TigerFFmpeg::start() {
     isPlaying = 1;
     //因为需要从流中不断的读取网络上数据，而且外部有可能是在主线程中调用，因此需要单独的开启一个线程
     if (videoChannel) {
-        videoChannel->pkt_queue.setWork(1);
+        videoChannel->packet_queue.setWork(1);
         videoChannel->isPlaying = isPlaying;
         videoChannel->play();
     }
@@ -172,13 +172,14 @@ void TigerFFmpeg::_start() const {
             //读取成功
             if (audioChannel && packet->stream_index == audioChannel->channleId) {
                 //表示音频
+                audioChannel->packet_queue.push(packet);
             } else if (videoChannel && packet->stream_index == videoChannel->channleId) {
                 //表示视频
                 //读取到一帧数据，就放到视频队列里面
-                videoChannel->pkt_queue.push(packet);
+                videoChannel->packet_queue.push(packet);
             }
         } else if (ref == AVERROR_EOF) {
-            ////读取完毕
+            //读取完毕
         } else {
             //读取失败
         }

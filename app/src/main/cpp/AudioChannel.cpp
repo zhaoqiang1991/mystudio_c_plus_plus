@@ -17,7 +17,7 @@ AudioChannel::AudioChannel(int channleId, AVCodecContext *avCodecContext,
     //out_sample_rate * 2 * 2 = out_sample_rate(采样率) * 双声道+ 16位(2个字节)
     data = static_cast<uint8_t *>(malloc(out_sample_rate * out_samplesize * out_channels));
     //给这段内存初始化
-    // memset(data, 0, out_sample_rate * 2 * 2);
+     memset(data, 0, out_sample_rate * out_channels * out_samplesize);
 }
 
 AudioChannel::~AudioChannel() {
@@ -42,6 +42,8 @@ void *audio_play(void *args) {
 void AudioChannel::play() {
     //构造函数里面已经设置了工作队列是播放状态
     isPlaying = 1;
+    //特别重要 特别重要 特别重要
+    startWork();
 
     //重采样器
     swrContext = swr_alloc_set_opts(0, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, out_sample_rate,

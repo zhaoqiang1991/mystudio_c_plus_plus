@@ -4,10 +4,45 @@
 
 #include "VideoChannel.h"
 
+/**
+ * 针对视频挤压的多余的包，进行丢包,丢包，指导下一个关键帧(I帧)
+ * @param q
+ */
+void dropAvPacket(queue<AVPacket*> &q) {
+    while (!q.empty()){
+       AVPacket  * packet = q.front();
+       //如果不属于I帧
+       if(packet->flags != AV_PKT_FLAG_KEY){
+           BaseChannel::releaseAvPacket(&packet);
+           //出队列
+           q.pop();
+       }else{
+           break;
+       }
+    }
+}
+
+
+/**
+ * 丢frames比较简单，就不会有太多的限制，相对丢包比较简单
+ * @param q
+ */
+void dropAvFrame(queue<AVFrame *> &q) {
+    if (!q.empty()){
+        AVFrame * frame = q.front();
+        BaseChannel::releaseAvFrame(&frame);
+        q.pop();
+    }
+}
 
 VideoChannel::VideoChannel(int channleId, AVCodecContext *avCodecContext,
                            CallJavaHelper *javaCallHelper, AVRational timeBase, int fps)
-        : BaseChannel(channleId, avCodecContext, javaCallHelper, timeBase), fps(fps) {}
+        : BaseChannel(channleId, avCodecContext, javaCallHelper, timeBase), fps(fps) {
+    //用于设置一个同步操作  //丢frame包比较简单
+    frame_queue.setSyncHandle(dropAvFrame);
+    //丢包比较复杂
+    //packet_queue.setSyncHandle(dropAvPacket);
+}
 
 VideoChannel::~VideoChannel() {
 
@@ -40,7 +75,7 @@ void VideoChannel::stop() {
 
 }
 
-void VideoChannel::decodePacket() {
+void * VideoChannel::decodePacket() {
     //开始真正的解码，使用一个循环不断的从队列里面读取数据，直到没有数据
     AVPacket *packet = 0;
     int ref = 0;
@@ -88,13 +123,16 @@ void VideoChannel::render() {
     swsContext = sws_getContext(avCodecContext->width, avCodecContext->height,
                                 avCodecContext->pix_fmt,
                                 avCodecContext->width, avCodecContext->height,
-                                AV_PIX_FMT_ARGB, SWS_BILINEAR, 0, 0, 0);
+                                AV_PIX_FMT_RGBA, SWS_BILINEAR, 0, 0, 0);
+    //每一个画面刷新的间隔
+    double frame_delays = 1.0 / fps;
+
     //图像颜色空间转化 ，不停地去拿数据，不停地去转化数据
     AVFrame *avFrame;
     uint8_t *dst_data[4];
     int dst_linesize[4];
     av_image_alloc(dst_data, dst_linesize, avCodecContext->width, avCodecContext->height,
-                   AV_PIX_FMT_ABGR, 1);
+                   AV_PIX_FMT_RGBA, 1);
     while (isPlaying) {
         int ref = frame_queue.pop(avFrame);
 
@@ -107,9 +145,46 @@ void VideoChannel::render() {
         //dst_linesize 表示一行存放的字节长度数据
         sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avCodecContext->height, dst_data,
                   dst_linesize);
+        //获得当前画面播放的相对时间,best_effort_timestamp大概率情况下会和pts一样
+        double clock = avFrame->best_effort_timestamp * av_q2d(time_base);
+        //额外的延迟时间
+        double extra_delay = avFrame->repeat_pict / (2 * fps);
+        double delays = frame_delays + extra_delay;
+        if (!audioChannel) {
+            av_usleep(delays * 1000 * 1000);
+        } else {
+            if (clock == 0) {
+                //正常播放
+                av_usleep(delays * 1000 * 1000);
+            } else {
+                double audioClock = audioChannel->clock;
+                //音视频的间隔
+                double diff = clock - audioClock;
+                if (diff > 0) {
+                    //表示视频播放的比较快,音频播放的比较慢
+                    LOGD("========视频快了= :%1f",diff);
+                    av_usleep((delays + diff) * 1000 * 1000);
+                } else if (diff < 0) {
+                    LOGD("========音频快了= :%1f",diff);
+                    //表示音频播放的比较快,视频播放的比较慢不要睡眠了，快速赶上音频
+                    //视频包挤压的太多了，此时需要考虑丢包
+                    if (fabs(diff) >= 0.05) {
+                        //相差的时间diff 丢视频包
+                        releaseAvFrame(&avFrame);//因为要丢视频包，所以要把当前的frame释放掉
+                        frame_queue.sync();
+                        continue;
+                    }else{
+                        //允许的范围之内
+                    }
+                }
+
+            }
+        }
+
+        //休眠
 
         //回调出去进行播放，只需要那数组的第0个元素就可以，其他的都是null
-        renderFrame(dst_data[0],dst_linesize[0],avCodecContext->width,avCodecContext->height);
+        renderFrame(dst_data[0], dst_linesize[0], avCodecContext->width, avCodecContext->height);
 
         //avFrame用完就没有用了，就可以释放了
         releaseAvFrame(&avFrame);
@@ -121,4 +196,8 @@ void VideoChannel::render() {
 
 void VideoChannel::setRenderFrameCallback(RenderFrame callback) {
     this->renderFrame = callback;
+}
+
+void VideoChannel::setAudioChannel(AudioChannel *audioChannel) {
+    this->audioChannel = audioChannel;
 }

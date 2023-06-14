@@ -67,9 +67,9 @@ void TigerFFmpeg::prepareFFmpeg() {
     //6.查找流
     for (int i = 0; i < formatContext->nb_streams; ++i) {
         //遍历总共有几路流
-
+        AVStream *stream = formatContext->streams[i];
         //7.拿到解码器参数
-        AVCodecParameters *codecpar = formatContext->streams[i]->codecpar;
+        AVCodecParameters *codecpar = stream->codecpar;
         //8.查找解码器
         AVCodec *avCodec = avcodec_find_decoder(codecpar->codec_id);
         if (!avCodec) {
@@ -89,9 +89,10 @@ void TigerFFmpeg::prepareFFmpeg() {
             return;
         }
         //10 赋值参数,这一步特别重要
-        if(avcodec_parameters_to_context(codecContext,codecpar) < 0 ){
+        if (avcodec_parameters_to_context(codecContext, codecpar) < 0) {
             if (callJavaHelper)
-                callJavaHelper->onError(THREAD_CHILD,(jstring) FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL);
+                callJavaHelper->onError(THREAD_CHILD,
+                                        (jstring) FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL);
             return;
         }
 
@@ -106,7 +107,7 @@ void TigerFFmpeg::prepareFFmpeg() {
             return;
         }
         //拿到对应视频流的时间基
-        AVRational base = formatContext->streams[i]->time_base;
+        AVRational base = stream->time_base;
         if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             //音频流
             LOGE("=========创建audio");
@@ -114,7 +115,11 @@ void TigerFFmpeg::prepareFFmpeg() {
         } else if (codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             //视频流
             LOGE("=========创建vidio");
-            videoChannel = new VideoChannel(i, codecContext, callJavaHelper, base, 0);
+            //画面间隔==帧率
+            AVRational frame_rate = stream->avg_frame_rate;
+            int fps = av_q2d(frame_rate);
+            videoChannel = new VideoChannel(i, codecContext, callJavaHelper, base, fps);
+            videoChannel->setAudioChannel(audioChannel);
             videoChannel->setRenderFrameCallback(callback);
         }
 
@@ -145,6 +150,9 @@ void TigerFFmpeg::start() {
     }
 
     if (videoChannel) {
+        if(audioChannel){
+            videoChannel->setAudioChannel(audioChannel);
+        }
         videoChannel->packet_queue.setWork(1);
         videoChannel->isPlaying = isPlaying;
         videoChannel->play();

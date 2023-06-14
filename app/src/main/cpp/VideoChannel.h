@@ -7,10 +7,12 @@
 
 #include "BaseChannel.h"
 #include <pthread.h>
+#include "AudioChannel.h"
 
 extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
+#include <libavutil/time.h>
 }
 
 typedef void (*RenderFrame)(uint8_t *, int, int, int);
@@ -26,11 +28,13 @@ public:
 
     void stop() override;
 
-    void decodePacket();
+    void * decodePacket();
 
     void render();
 
     void setRenderFrameCallback(RenderFrame callback);
+
+    void setAudioChannel(AudioChannel* audioChannel);
 
 
 public:
@@ -41,6 +45,8 @@ public:
     RenderFrame renderFrame = nullptr;
 
     SwsContext *swsContext = nullptr;
+
+    AudioChannel *audioChannel= nullptr;
 };
 
 

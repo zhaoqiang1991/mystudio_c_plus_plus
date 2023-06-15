@@ -60,21 +60,31 @@ void AudioChannel::play() {
 
 void AudioChannel::stop() {
     isPlaying = 0;
-    packet_queue.setWork(0);
-    frame_queue.setWork(0);
+    javaCallHelper = nullptr;
+    /*packet_queue.setWork(0);
+    frame_queue.setWork(0);*/
+    stopWork();
     //pthread_join 等待，卡主pid_decode线程 等待pid_decode执行完毕，此时代码会一致卡在79行，不继续向下执行
-    pthread_join(pid_audio_play, 0);
     pthread_join(pid_audio_decode, 0);
-    if (swrContext) {
-        swr_free(&swrContext);
-        swrContext = nullptr;
+    pthread_join(pid_audio_play, 0);
+
+
+    //设置停止状态
+    if (bqPlayerPlay) {
+        (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
+        bqPlayerPlay = 0;
     }
     //释放播放器
     if (bqPlayerObject) {
         (*bqPlayerObject)->Destroy(bqPlayerObject);
         bqPlayerObject = nullptr;
         bqPlayerBufferQueue = nullptr;
-        bqPlayerPlay = nullptr;
+    }
+
+    //释放混音器
+    if (outputMixObject) {
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = nullptr;
     }
 
     //释放引擎
@@ -83,11 +93,9 @@ void AudioChannel::stop() {
         engineObject = nullptr;
         engineEngine = nullptr;
     }
-
-    //释放混音器
-    if (outputMixObject) {
-        (*outputMixObject)->Destroy(outputMixObject);
-        outputMixObject = nullptr;
+    if (swrContext) {
+        swr_free(&swrContext);
+        swrContext = nullptr;
     }
 }
 

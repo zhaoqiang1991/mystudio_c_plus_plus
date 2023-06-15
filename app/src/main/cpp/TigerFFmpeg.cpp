@@ -188,7 +188,41 @@ void TigerFFmpeg::stop() {
 }
 
 void TigerFFmpeg::seek(int progress) {
-
+    //进去必须 在0- duration 范围之类
+    if (progress < 0 || progress >= duration) {
+        return;
+    }
+    if (!audioChannel && !videoChannel) {
+        return;
+    }
+    if (!formatContext) {
+        return;
+    }
+    isSeek = 1;
+    pthread_mutex_lock(&seekLock);
+    //单位是 微妙
+    int64_t seek = progress * 1000000;
+    //seek到请求的时间 之前最近的关键帧
+    // 只有从关键帧才能开始解码出完整图片
+    av_seek_frame(formatContext, -1, seek, AVSEEK_FLAG_BACKWARD);
+//    avformat_seek_file(formatContext, -1, INT64_MIN, seek, INT64_MAX, 0);
+    // 音频、与视频队列中的数据 是不是就可以丢掉了？
+    if (audioChannel) {
+        //暂停队列
+        audioChannel->stopWork();
+        //可以清空缓存
+//        avcodec_flush_buffers();
+        audioChannel->clear();
+        //启动队列
+        audioChannel->startWork();
+    }
+    if (videoChannel) {
+        videoChannel->stopWork();
+        videoChannel->clear();
+        videoChannel->startWork();
+    }
+    pthread_mutex_unlock(&seekLock);
+    isSeek = 0;
 }
 
 void *TigerFFmpeg::prepare_FFmpeg(void *args) {
@@ -202,23 +236,29 @@ void TigerFFmpeg::_start() {
     while (isPlaying) {
         //读取文件的时候没有网络请求，一下子就读取完毕了，可能会导致OOM，所以需要等待下
         //最重要的是读取本地文件的时候，一下子就会读取完毕，读取网络请求还好，因为也有请求网络时间
-        if(audioChannel && audioChannel->packet_queue.size() > 100){
+        if (audioChannel && audioChannel->packet_queue.size() > 100) {
             av_usleep(1000 * 10);
             continue;
         }
 
-        if(videoChannel && videoChannel->packet_queue.size() > 100){
+        if (videoChannel && videoChannel->packet_queue.size() > 100) {
             av_usleep(1000 * 10);
             continue;
         }
 
 
-
+        pthread_mutex_lock(&seekLock);
         //如果是在播放，需要不断的从流中读取数据
         AVPacket *packet = av_packet_alloc();
 
         //从媒体文件中读取一帧数据
         ref = av_read_frame(formatContext, packet);
+        pthread_mutex_unlock(&seekLock);
+        /*//多线程的问题，不丢掉的话，seek的时候多出现一帧画面
+        if(isSeek){
+            av_packet_free(&packet);
+            continue;
+        }*/
         if (ref == 0) {
             //读取成功
             if (audioChannel && packet->stream_index == audioChannel->channleId) {
@@ -249,4 +289,8 @@ void TigerFFmpeg::_start() {
 
 void TigerFFmpeg::setRenderFrameCallback(RenderFrame callback) {
     this->callback = callback;
+}
+
+int TigerFFmpeg::getDuration() {
+    return duration;
 }

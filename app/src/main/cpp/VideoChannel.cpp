@@ -148,6 +148,10 @@ void VideoChannel::render() {
         if (!ref) {
             continue;
         }
+        if(javaCallHelper && !audioChannel){
+            javaCallHelper->onProgress(THREAD_CHILD,clock);
+        }
+
         //dst_linesize 表示一行存放的字节长度数据
         sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avCodecContext->height, dst_data,
                   dst_linesize);
@@ -156,34 +160,41 @@ void VideoChannel::render() {
         //额外的延迟时间
         double extra_delay = avFrame->repeat_pict / (2 * fps);
         double delays = frame_delays + extra_delay;
-        if (!audioChannel) {
-            av_usleep(delays * 1000 * 1000);
+        if (clock == 0) {
+            //正常播放
+            av_usleep(delays * 1000000);
         } else {
-            if (clock == 0) {
-                //正常播放
-                av_usleep(delays * 1000 * 1000);
-            } else {
-                double audioClock = audioChannel->clock;
-                //音视频的间隔
-                double diff = clock - audioClock;
-                if (diff > 0) {
-                    //表示视频播放的比较快,音频播放的比较慢
-                    LOGD("========视频快了= :%1f",diff);
-                    av_usleep((delays + diff) * 1000 * 1000);
-                } else if (diff < 0) {
-                    LOGD("========音频快了= :%1f",diff);
-                    //表示音频播放的比较快,视频播放的比较慢不要睡眠了，快速赶上音频
-                    //视频包挤压的太多了，此时需要考虑丢包
-                    if (fabs(diff) >= 0.05) {
-                        //相差的时间diff 丢视频包
-                        releaseAvFrame(&avFrame);//因为要丢视频包，所以要把当前的frame释放掉
+            double audioClock = audioChannel ? audioChannel->clock : 0;
+            double diff = fabs(clock - audioClock);
+            LOGE("当前和音频比较:%f - %f = %f", clock, audioClock, diff);
+            //允许误差 diff > 0.04 &&
+            if (audioChannel) {
+                //如果视频比音频快，延迟差值播放，否则直接播放
+                if (clock > audioClock) {
+                    if (diff > 1) {
+                        //差的太久了， 那只能慢慢赶 不然就是卡好久
+                        av_usleep((delays * 2) * 1000000);
+                    } else {
+                        //差的不多，尝试一次赶上去
+                        av_usleep((delays + diff) * 1000000);
+                    }
+                } else {
+                    //音频比视频快
+                    //视频慢了 0.05s 已经比较明显了 (丢帧)
+                    if (diff > 1) {
+                        //一种可能： 快进了(因为解码器中有缓存数据，这样获得的avframe就和seek的匹配了)
+                    } else if (diff >= 0.05) {
+                        releaseAvFrame(&avFrame);
+                        //执行同步操作 删除到最近的key frame
                         frame_queue.sync();
                         continue;
-                    }else{
-                        //允许的范围之内
+                    } else {
+                        //不休眠 加快速度赶上去
                     }
                 }
-
+            } else {
+                //正常播放
+                av_usleep(delays * 1000000);
             }
         }
 

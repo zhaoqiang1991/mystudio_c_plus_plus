@@ -75,7 +75,7 @@ static void player_native_prepare(JNIEnv *env, jobject thiz, jstring data_source
 void player_native_start(JNIEnv *env, jobject thiz) {
     LOGD("======player_native_start 调用了");
     LOGD("================================================");
-    if(fFmpeg){
+    if (fFmpeg) {
         fFmpeg->start();
     }
 }
@@ -118,6 +118,9 @@ void player_native_seek(JNIEnv *env, jobject thiz, jint progress) {
     LOGD("======native_seek 调用了");
     LOGD("================================================");
     LOGD("progress = %d\n", progress);
+    if (fFmpeg) {
+        fFmpeg->seek(progress);
+    }
 }
 
 void player_release(JNIEnv *env, jobject thize) {
@@ -132,6 +135,13 @@ void player_release(JNIEnv *env, jobject thize) {
     pthread_mutex_unlock(&mutex_thread);
 }
 
+int player_getDuration(JNIEnv *env, jobject thize) {
+    if (fFmpeg) {
+        return fFmpeg->getDuration();
+    }
+    return 0;
+}
+
 /**
  * 动态注册方法表
  * 第一个参数：java里面写的jni方法
@@ -139,12 +149,14 @@ void player_release(JNIEnv *env, jobject thize) {
  * 第三个参数:本地方法
  */
 static const JNINativeMethod jniNativeMethod[] = {
-        {"native_prepare",    "(Ljava/lang/String;)V",     (void *) player_native_prepare},
-        {"native_start",      "()V",                       (void *) player_native_start},
-        {"native_stop",       "()V",                       (void *) player_native_stop},
-        {"native_seek",       "(I)V",                      (void *) player_native_seek},
-        {"native_setSurface", "(Landroid/view/Surface;)V", (void *) player_setSurface},
-        {"native_release",    "()V",                       (void *) player_release},
+        {"native_prepare",     "(Ljava/lang/String;)V",     (void *) player_native_prepare},
+        {"native_start",       "()V",                       (void *) player_native_start},
+        {"native_stop",        "()V",                       (void *) player_native_stop},
+        {"native_seek",        "(I)V",                      (void *) player_native_seek},
+        {"native_setSurface",  "(Landroid/view/Surface;)V", (void *) player_setSurface},
+        {"native_release",     "()V",                       (void *) player_release},
+        {"native_getDuration", "()I",                       (void *) player_getDuration}
+
 
 };
 

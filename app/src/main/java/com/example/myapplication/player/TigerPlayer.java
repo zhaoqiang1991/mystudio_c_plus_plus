@@ -45,7 +45,11 @@ public class TigerPlayer implements SurfaceHolder.Callback {
         native_stop();
     }
 
-    public void release(){
+    public int getDuration() {
+        return native_getDuration();
+    }
+
+    public void release() {
         holder.removeCallback(this);
         native_release();
     }
@@ -99,6 +103,14 @@ public class TigerPlayer implements SurfaceHolder.Callback {
             mOnProgressListener.onProgress(progress);
         }
     }
+    public void seek(int progress) {
+        new Thread() {
+            @Override
+            public void run() {
+                native_seek(progress);
+            }
+        }.start();
+    }
 
     private native void native_prepare(String url);
 
@@ -112,4 +124,8 @@ public class TigerPlayer implements SurfaceHolder.Callback {
     private native void native_setSurface(Surface surface);
 
     private native void native_release();
+
+    private native int native_getDuration();
+
+
 }

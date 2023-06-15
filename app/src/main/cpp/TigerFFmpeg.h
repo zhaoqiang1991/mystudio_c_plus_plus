@@ -47,6 +47,8 @@ public:
 
     void setRenderFrameCallback(RenderFrame callback);
 
+    int getDuration();
+
 public:
     CallJavaHelper *callJavaHelper;
     char *url;

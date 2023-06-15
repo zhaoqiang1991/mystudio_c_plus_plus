@@ -292,6 +292,12 @@ int AudioChannel::getPcm() {
 
     //获取一个相对播放的时间戳,获得相对播放这一段数据的秒数,相对开始播放
     clock = frame->pts * av_q2d(time_base);
+
+    //音频的时间
+    clock = frame->best_effort_timestamp * av_q2d(time_base);
+    if (javaCallHelper) {
+        javaCallHelper->onProgress(THREAD_CHILD, clock);
+    }
     releaseAvFrame(&frame);
     return data_size;
 }

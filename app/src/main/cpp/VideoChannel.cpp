@@ -116,7 +116,10 @@ void * VideoChannel::decodePacket() {
         } else if (ref < 0) {
             break;
         }
-
+        while (frame_queue.size() > 100 && isPlaying) {
+            av_usleep(1000 * 10);
+            continue;
+        }
         //在开一个线程来播放(保证播放的流畅度),不然下一帧数据来的时候，可能会有延迟
         //把解码到的一帧一帧的数据放在一个帧队列里面去处理
         frame_queue.push(avFrame);

@@ -273,39 +273,45 @@ void AudioChannel::_play() {
 int AudioChannel::getPcm() {
     int data_size = 0;
     AVFrame *frame;
-    int ret = frame_queue.pop(frame);
-    if (!isPlaying) {
-        if (ret) {
-            releaseAvFrame(&frame);
+    while (isPlaying) {
+        int ret = frame_queue.pop(frame);
+        if(!isPlaying){
+            break;
         }
-        return data_size;
+
+        if (!ret) {
+            continue;
+            //releaseAvFrame(&frame);
+        }
+        //需要重采样，因为播放器只能播放特定的数据格式数据，但是开发人员传递的参数不一定是规定的那些，为了保证播放的声音质量，所以需要重采样
+
+        int64_t delays = swr_get_delay(swrContext, frame->sample_rate);
+        //将nb_samples个数据由sample_rate采样率转成44100后返回多少数据，10个48000= nb个44100
+        //AV_ROUND_UP 向上(相当于四舍入伍)
+        //delays + frame->nb_samples 处理积压数据
+        int64_t max_samples = av_rescale_rnd(delays + frame->nb_samples, out_sample_rate,
+                                             frame->sample_rate,
+                                             AV_ROUND_UP);
+        //frame->data 输入数据，frame->nb_samples输入数据量,把转码后的数据存放在data里面,samples真正最后转化后的数据
+        //samples单位是 out_sample_rate*2,这里的2表示的是声道数
+        int samples = swr_convert(swrContext, &data, max_samples,
+                                  (const uint8_t **) (frame->data),
+                                  frame->nb_samples);
+        //获得多少个有效的字节数据
+        //data_size = samples /** out_sample_rate*/ * 2 * 2;
+        data_size = samples * out_channels * out_samplesize;
+
+        //获取一个相对播放的时间戳,获得相对播放这一段数据的秒数,相对开始播放
+        //clock = frame->pts * av_q2d(time_base);
+
+        //音频的时间
+        clock = frame->best_effort_timestamp * av_q2d(time_base);
+        if (javaCallHelper) {
+            javaCallHelper->onProgress(THREAD_CHILD, clock);
+        }
+        break;
     }
-    //需要重采样，因为播放器只能播放特定的数据格式数据，但是开发人员传递的参数不一定是规定的那些，为了保证播放的声音质量，所以需要重采样
 
-    int64_t delays = swr_get_delay(swrContext, frame->sample_rate);
-    //将nb_samples个数据由sample_rate采样率转成44100后返回多少数据，10个48000= nb个44100
-    //AV_ROUND_UP 向上(相当于四舍入伍)
-    //delays + frame->nb_samples 处理积压数据
-    int64_t max_samples = av_rescale_rnd(delays + frame->nb_samples, out_sample_rate,
-                                         frame->sample_rate,
-                                         AV_ROUND_UP);
-    //frame->data 输入数据，frame->nb_samples输入数据量,把转码后的数据存放在data里面,samples真正最后转化后的数据
-    //samples单位是 out_sample_rate*2,这里的2表示的是声道数
-    int samples = swr_convert(swrContext, &data, max_samples,
-                              (const uint8_t **) (frame->data),
-                              frame->nb_samples);
-    //获得多少个有效的字节数据
-    //data_size = samples /** out_sample_rate*/ * 2 * 2;
-    data_size = samples * out_channels * out_samplesize;
-
-    //获取一个相对播放的时间戳,获得相对播放这一段数据的秒数,相对开始播放
-    clock = frame->pts * av_q2d(time_base);
-
-    //音频的时间
-    clock = frame->best_effort_timestamp * av_q2d(time_base);
-    if (javaCallHelper) {
-        javaCallHelper->onProgress(THREAD_CHILD, clock);
-    }
     releaseAvFrame(&frame);
     return data_size;
 }

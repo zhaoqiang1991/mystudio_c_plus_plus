@@ -166,7 +166,7 @@ void VideoChannel::render() {
         } else {
             double audioClock = audioChannel ? audioChannel->clock : 0;
             double diff = fabs(clock - audioClock);
-            LOGE("当前和音频比较:%f - %f = %f", clock, audioClock, diff);
+            LOGD("当前和音频比较:%f - %f = %f", clock, audioClock, diff);
             //允许误差 diff > 0.04 &&
             if (audioChannel) {
                 //如果视频比音频快，延迟差值播放，否则直接播放

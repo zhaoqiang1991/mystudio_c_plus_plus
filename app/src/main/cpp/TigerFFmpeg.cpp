@@ -21,7 +21,6 @@ TigerFFmpeg::TigerFFmpeg(CallJavaHelper *callJavaHelper, const char *dataSource)
 
 TigerFFmpeg::~TigerFFmpeg() {
     pthread_mutex_destroy(&this->seekLock);
-    this->callJavaHelper = nullptr;
     DELETE(this->url);
 }
 
@@ -42,6 +41,7 @@ void TigerFFmpeg::prepareFFmpeg() {
     av_dict_set(&opts, "timeout", "3000000", 0);
     //4.设置输入文件的封装格式
     int status = avformat_open_input(&formatContext, url, nullptr, &opts);
+    av_dict_free(&opts);
     LOGE("%s open %d  %s", url, status, av_err2str(status));
     if (status != 0) {
         //打开失败，需要回调到Java层
@@ -125,11 +125,11 @@ void TigerFFmpeg::prepareFFmpeg() {
 
 
     }
+
     if (callJavaHelper != nullptr) {
         //准备完成了，通知Java层可以开始播放了
         callJavaHelper->onPrepare(THREAD_CHILD);
     }
-
 }
 
 
@@ -150,7 +150,7 @@ void TigerFFmpeg::start() {
     }
 
     if (videoChannel) {
-        if(audioChannel){
+        if (audioChannel) {
             videoChannel->setAudioChannel(audioChannel);
         }
         videoChannel->packet_queue.setWork(1);
@@ -160,8 +160,31 @@ void TigerFFmpeg::start() {
     pthread_create(&pid_play, nullptr, play, this);
 }
 
-void TigerFFmpeg::stop() {
+/**
+ * 异步等待当前prepare线程结束
+ * @param args
+ * @return
+ */
+void *ayns_stop(void *args) {
+    TigerFFmpeg *fFmpeg = static_cast<TigerFFmpeg *>(args);
+    pthread_join(fFmpeg->pid_prepare, 0);
+    pthread_join(fFmpeg->pid_play, 0);
+    DELETE(fFmpeg->videoChannel);
+    DELETE(fFmpeg->audioChannel);
 
+    if (fFmpeg->formatContext) {
+        avformat_close_input(&fFmpeg->formatContext);
+        avformat_free_context(fFmpeg->formatContext);
+        fFmpeg->formatContext = nullptr;
+    }
+    DELETE(fFmpeg);
+    return nullptr;
+}
+
+void TigerFFmpeg::stop() {
+    isPlaying = 0;
+    this->callJavaHelper = nullptr;
+    pthread_create(&pid_stop, 0, ayns_stop, this);
 }
 
 void TigerFFmpeg::seek(int progress) {
@@ -174,9 +197,23 @@ void *TigerFFmpeg::prepare_FFmpeg(void *args) {
     return nullptr;
 }
 
-void TigerFFmpeg::_start() const {
+void TigerFFmpeg::_start() {
     int ref = 0;
     while (isPlaying) {
+        //读取文件的时候没有网络请求，一下子就读取完毕了，可能会导致OOM，所以需要等待下
+        //最重要的是读取本地文件的时候，一下子就会读取完毕，读取网络请求还好，因为也有请求网络时间
+        if(audioChannel && audioChannel->packet_queue.size() > 100){
+            av_usleep(1000 * 10);
+            continue;
+        }
+
+        if(videoChannel && videoChannel->packet_queue.size() > 100){
+            av_usleep(1000 * 10);
+            continue;
+        }
+
+
+
         //如果是在播放，需要不断的从流中读取数据
         AVPacket *packet = av_packet_alloc();
 
@@ -193,11 +230,21 @@ void TigerFFmpeg::_start() const {
                 videoChannel->packet_queue.push(packet);
             }
         } else if (ref == AVERROR_EOF) {
-            //读取完毕
+            //读取完毕,但是可能还没有播放完成
+            if (audioChannel->packet_queue.empty() && audioChannel->frame_queue.empty() &&
+                videoChannel->packet_queue.empty() && videoChannel->frame_queue.empty()) {
+                break;
+            }
+            //这里要继续循环的不能进行sleep,是因为如果是直播(不能拖动)的话，可以sleep,如果是点播(可以拖动，快进快退)，就会有问题，
         } else {
             //读取失败
+            break;
         }
     }
+    isPlaying = 0;
+    audioChannel->stop();
+    videoChannel->stop();
+
 }
 
 void TigerFFmpeg::setRenderFrameCallback(RenderFrame callback) {

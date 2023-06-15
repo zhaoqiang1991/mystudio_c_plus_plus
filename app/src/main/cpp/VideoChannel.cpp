@@ -72,6 +72,12 @@ void VideoChannel::play() {
 }
 
 void VideoChannel::stop() {
+    isPlaying = 0;
+    packet_queue.setWork(0);
+    frame_queue.setWork(0);
+    //pthread_join 等待，卡主pid_decode线程 等待pid_decode执行完毕，此时代码会一致卡在79行，不继续向下执行
+    pthread_join(pid_decode,0);
+    pthread_join(pid_render,0);
 
 }
 
@@ -192,6 +198,10 @@ void VideoChannel::render() {
 
     av_freep(&dst_data[0]);
     releaseAvFrame(&avFrame);
+
+    isPlaying = 0 ;
+    sws_freeContext(swsContext);
+    swsContext = nullptr;
 }
 
 void VideoChannel::setRenderFrameCallback(RenderFrame callback) {

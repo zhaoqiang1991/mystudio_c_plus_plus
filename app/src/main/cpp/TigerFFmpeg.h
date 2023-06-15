@@ -37,7 +37,7 @@ public:
     void prepareFFmpeg();
 
     void start();
-    void _start() const;
+    void _start();
 
     void stop();
 

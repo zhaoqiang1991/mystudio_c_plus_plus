@@ -13,8 +13,6 @@ import com.example.myapplication.listener.OnProgressListener;
 
 public class TigerPlayer implements SurfaceHolder.Callback {
     private String url;
-    private SurfaceView mSurfaceView;
-
     private OnPrepareListener mOnPrepareListener;
     private OnErrorListener mOnErrorListener;
     private OnProgressListener mOnProgressListener;
@@ -25,7 +23,9 @@ public class TigerPlayer implements SurfaceHolder.Callback {
     }
 
     public void setSurfaceView(SurfaceView surfaceView) {
-        this.mSurfaceView = surfaceView;
+        /*if(holder != null){
+            holder.removeCallback(this);
+        }*/
         holder = surfaceView.getHolder();
         holder.addCallback(this);
     }
@@ -43,6 +43,11 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     public void stop() {
         native_stop();
+    }
+
+    public void release(){
+        holder.removeCallback(this);
+        native_release();
     }
 
 
@@ -105,4 +110,6 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     //设置可用的画布
     private native void native_setSurface(Surface surface);
+
+    private native void native_release();
 }

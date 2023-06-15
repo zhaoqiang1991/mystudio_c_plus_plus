@@ -2,9 +2,11 @@ package com.example.myapplication.player;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.myapplication.R;
@@ -21,6 +23,8 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager
+                .LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_player);
         surfaceView = this.findViewById(R.id.player_surface);
         tigerPlayer = new TigerPlayer();
@@ -60,6 +64,21 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager
+                    .LayoutParams.FLAG_FULLSCREEN);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+        setContentView(R.layout.activity_player);
+        SurfaceView surfaceView = findViewById(R.id.player_surface);
+        tigerPlayer.setSurfaceView(surfaceView);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -72,4 +91,9 @@ public class PlayerActivity extends AppCompatActivity {
         tigerPlayer.stop();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tigerPlayer.release();
+    }
 }

@@ -11,6 +11,7 @@
 #include "TigerFFmpeg.h"
 #include <android/native_window_jni.h>
 
+CallJavaHelper *callJavaHelper = nullptr;
 TigerFFmpeg *fFmpeg = nullptr;
 JavaVM *_vm;
 ANativeWindow *window = nullptr;
@@ -56,7 +57,7 @@ static void player_native_prepare(JNIEnv *env, jobject thiz, jstring data_source
     LOGD("======native_prepare 调用了");
     LOGD("================================================");
     const char *dataSource = env->GetStringUTFChars(data_source, 0);
-    CallJavaHelper *callJavaHelper = new CallJavaHelper(_vm, env, &thiz);
+    callJavaHelper = new CallJavaHelper(_vm, env, &thiz);
     fFmpeg = new TigerFFmpeg(callJavaHelper, dataSource);
     //设置渲染器回调
     fFmpeg->setRenderFrameCallback(renderAVframe);
@@ -74,7 +75,9 @@ static void player_native_prepare(JNIEnv *env, jobject thiz, jstring data_source
 void player_native_start(JNIEnv *env, jobject thiz) {
     LOGD("======player_native_start 调用了");
     LOGD("================================================");
-    fFmpeg->start();
+    if(fFmpeg){
+        fFmpeg->start();
+    }
 }
 
 /**
@@ -83,6 +86,10 @@ void player_native_start(JNIEnv *env, jobject thiz) {
 void player_native_stop(JNIEnv *env, jobject thiz) {
     LOGD("======native_stop 调用了");
     LOGD("================================================");
+    if (fFmpeg) {
+        fFmpeg->stop();
+    }
+    DELETE(callJavaHelper);
 }
 
 /**
@@ -113,6 +120,18 @@ void player_native_seek(JNIEnv *env, jobject thiz, jint progress) {
     LOGD("progress = %d\n", progress);
 }
 
+void player_release(JNIEnv *env, jobject thize) {
+    pthread_mutex_lock(&mutex_thread);
+    LOGD("======player_setSurface 调用了");
+    LOGD("================================================");
+    if (window) {
+        //如果已经有了，那么就需要释放掉
+        ANativeWindow_release(window);
+        window = nullptr;
+    }
+    pthread_mutex_unlock(&mutex_thread);
+}
+
 /**
  * 动态注册方法表
  * 第一个参数：java里面写的jni方法
@@ -124,7 +143,8 @@ static const JNINativeMethod jniNativeMethod[] = {
         {"native_start",      "()V",                       (void *) player_native_start},
         {"native_stop",       "()V",                       (void *) player_native_stop},
         {"native_seek",       "(I)V",                      (void *) player_native_seek},
-        {"native_setSurface", "(Landroid/view/Surface;)V", (void *) player_setSurface}
+        {"native_setSurface", "(Landroid/view/Surface;)V", (void *) player_setSurface},
+        {"native_release",    "()V",                       (void *) player_release},
 
 };
 

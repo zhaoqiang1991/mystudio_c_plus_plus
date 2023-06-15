@@ -17,7 +17,7 @@ AudioChannel::AudioChannel(int channleId, AVCodecContext *avCodecContext,
     //out_sample_rate * 2 * 2 = out_sample_rate(采样率) * 双声道+ 16位(2个字节)
     data = static_cast<uint8_t *>(malloc(out_sample_rate * out_samplesize * out_channels));
     //给这段内存初始化
-     memset(data, 0, out_sample_rate * out_channels * out_samplesize);
+    memset(data, 0, out_sample_rate * out_channels * out_samplesize);
 }
 
 AudioChannel::~AudioChannel() {
@@ -59,7 +59,36 @@ void AudioChannel::play() {
 }
 
 void AudioChannel::stop() {
+    isPlaying = 0;
+    packet_queue.setWork(0);
+    frame_queue.setWork(0);
+    //pthread_join 等待，卡主pid_decode线程 等待pid_decode执行完毕，此时代码会一致卡在79行，不继续向下执行
+    pthread_join(pid_audio_play, 0);
+    pthread_join(pid_audio_decode, 0);
+    if (swrContext) {
+        swr_free(&swrContext);
+        swrContext = nullptr;
+    }
+    //释放播放器
+    if (bqPlayerObject) {
+        (*bqPlayerObject)->Destroy(bqPlayerObject);
+        bqPlayerObject = nullptr;
+        bqPlayerBufferQueue = nullptr;
+        bqPlayerPlay = nullptr;
+    }
 
+    //释放引擎
+    if (engineEngine) {
+        (*engineObject)->Destroy(engineObject);
+        engineObject = nullptr;
+        engineEngine = nullptr;
+    }
+
+    //释放混音器
+    if (outputMixObject) {
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = nullptr;
+    }
 }
 
 void AudioChannel::decode() {
@@ -193,7 +222,8 @@ void AudioChannel::_play() {
     const SLboolean reqq[1] = {SL_BOOLEAN_TRUE};
 
     //7.5 创建播放器
-    result = (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk,1, idss, reqq);
+    result = (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk,
+                                                1, idss, reqq);
     if (SL_RESULT_SUCCESS != result) {
         return;
     }
@@ -262,6 +292,6 @@ int AudioChannel::getPcm() {
 
     //获取一个相对播放的时间戳,获得相对播放这一段数据的秒数,相对开始播放
     clock = frame->pts * av_q2d(time_base);
-
+    releaseAvFrame(&frame);
     return data_size;
 }

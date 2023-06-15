@@ -148,15 +148,23 @@ void VideoChannel::render() {
         if (!ref) {
             continue;
         }
-        if(javaCallHelper && !audioChannel){
-            javaCallHelper->onProgress(THREAD_CHILD,clock);
-        }
 
-        //dst_linesize 表示一行存放的字节长度数据
-        sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avCodecContext->height, dst_data,
-                  dst_linesize);
+        /**
+                *  seek需要注意的点：编码器中存在缓存
+                *  100s 的图像,用户seek到第 50s 的位置
+                *  音频是50s的音频，但是视频 你获得的是100s的视频
+                */
+
+        //显示时间戳 什么时候显示这个frame
+        if ((clock = avFrame->best_effort_timestamp) == AV_NOPTS_VALUE) {
+            clock = 0;
+        }
+        //pts 单位就是time_base
+        //av_q2d转为双精度浮点数 乘以 pts 得到pts --- 显示时间:秒
+        clock = clock * av_q2d(time_base);
+
         //获得当前画面播放的相对时间,best_effort_timestamp大概率情况下会和pts一样
-        double clock = avFrame->best_effort_timestamp * av_q2d(time_base);
+       // double clock = avFrame->best_effort_timestamp * av_q2d(time_base);
         //额外的延迟时间
         double extra_delay = avFrame->repeat_pict / (2 * fps);
         double delays = frame_delays + extra_delay;
@@ -200,6 +208,13 @@ void VideoChannel::render() {
 
         //休眠
 
+        if(javaCallHelper && !audioChannel){
+            javaCallHelper->onProgress(THREAD_CHILD,clock);
+        }
+
+        //dst_linesize 表示一行存放的字节长度数据
+        sws_scale(swsContext, avFrame->data, avFrame->linesize, 0, avCodecContext->height, dst_data,
+                  dst_linesize);
         //回调出去进行播放，只需要那数组的第0个元素就可以，其他的都是null
         renderFrame(dst_data[0], dst_linesize[0], avCodecContext->width, avCodecContext->height);
 

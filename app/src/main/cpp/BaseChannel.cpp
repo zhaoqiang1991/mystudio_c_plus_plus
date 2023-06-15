@@ -6,7 +6,7 @@
 
 BaseChannel::BaseChannel(int channleId, AVCodecContext *avCodecContext,
                          CallJavaHelper *javaCallHelper, AVRational time_base) :
-        channleId(channleId), avCodecContext(avCodecContext), time_base(time_base) {
+        channleId(channleId), javaCallHelper(javaCallHelper),avCodecContext(avCodecContext), time_base(time_base) {
     //注册回收packet函数
     packet_queue.setReleaseCallback(releaseAvPacket);
     frame_queue.setReleaseCallback(releaseAvFrame);

@@ -51,11 +51,11 @@ void CallJavaHelper::onProgress(int threadId, int progress) {
             LOGD("onProgress progress = %d\n", progress);
             return;
         }
-        this->env->CallVoidMethod(this->jobj, this->jmid_onprogress);
+        this->env->CallVoidMethod(this->jobj, this->jmid_onprogress,progress);
         _vm->DetachCurrentThread();
     } else {
         //主线程
-        this->env->CallVoidMethod(this->jobj, this->jmid_onprogress);
+        this->env->CallVoidMethod(this->jobj, this->jmid_onprogress,progress);
     }
 }
 

@@ -72,6 +72,7 @@ public class PlayerActivity extends AppCompatActivity implements SeekBar.OnSeekB
                         @Override
                         public void run() {
                             int duration = tigerPlayer.getDuration();
+                            Log.d(TAG,"===== native回调到java层,现在的播放时间 progress= " + progress);
                             //如果是直播
                             if (duration != 0) {
                                 if (isSeek){

@@ -4,12 +4,12 @@
 
 #include "BaseChannel.h"
 
-BaseChannel::BaseChannel(int channleId, AVCodecContext *avCodecContext,
-                         CallJavaHelper *javaCallHelper, AVRational time_base) :
+BaseChannel::BaseChannel(int channleId, CallJavaHelper *javaCallHelper,AVCodecContext *avCodecContext,
+                          AVRational time_base) :
         channleId(channleId), javaCallHelper(javaCallHelper),avCodecContext(avCodecContext), time_base(time_base) {
     //注册回收packet函数
-    packet_queue.setReleaseCallback(releaseAvPacket);
-    frame_queue.setReleaseCallback(releaseAvFrame);
+    pkt_queue.setReleaseHandle(releaseAvPacket);
+    frame_queue.setReleaseHandle(releaseAvFrame);
 
 }
 
@@ -22,9 +22,9 @@ BaseChannel::~BaseChannel() {
         avcodec_free_context(&avCodecContext);
         avCodecContext = nullptr;
     }
-    packet_queue.clear();
+    pkt_queue.clear();
     frame_queue.clear();
-    LOGD("============释放channel:%d %d", packet_queue.size(), frame_queue.size());
+    LOGD("============释放channel:%d %d", pkt_queue.size(), frame_queue.size());
 
 
 }

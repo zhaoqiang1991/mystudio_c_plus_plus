@@ -6,47 +6,35 @@
 #define MY_APPLICATION_VIDEOCHANNEL_H
 
 #include "BaseChannel.h"
-#include <pthread.h>
 #include "AudioChannel.h"
-
-extern "C" {
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
-#include <libavutil/time.h>
-}
+#include <pthread.h>
+#include <android/native_window.h>
 
 typedef void (*RenderFrame)(uint8_t *, int, int, int);
 
 class VideoChannel : public BaseChannel {
 public:
-    VideoChannel(int channleId, AVCodecContext *avCodecContext, CallJavaHelper *javaCallHelper,
-                 AVRational timeBase, int fps);
+    VideoChannel(int id,CallJavaHelper *javaCallHelper, AVCodecContext *avCodecContext, AVRational base, int fps);
 
-    ~VideoChannel() override;
+    virtual ~VideoChannel();
 
-    void play() override;
+    virtual void play();
 
-    void stop() override;
+    virtual void stop();
 
-    void * decodePacket();
+    void decodePacket();
 
-    void render();
+    void synchronizeFrame();
 
-    void setRenderFrameCallback(RenderFrame callback);
-
-    void setAudioChannel(AudioChannel* audioChannel);
-
+    void setRenderCallback(RenderFrame renderFrame);
 
 public:
+    AudioChannel *audioChannel = 0;
+private:
     int fps;
-    pthread_t pid_decode;
-    pthread_t pid_render;
-    //渲染器
-    RenderFrame renderFrame = nullptr;
-
-    SwsContext *swsContext = nullptr;
-
-    AudioChannel *audioChannel= nullptr;
+    pthread_t pid_video_play;
+    pthread_t pid_synchronize;
+    RenderFrame renderFrame;
 };
 
 

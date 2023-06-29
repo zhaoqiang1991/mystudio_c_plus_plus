@@ -41,6 +41,6 @@
 //打开解码器失败
 #define FFMPEG_OPEN_DECODER_FAIL 7
 //没有音视频
-#define FFMPEG_NOMEDIA 8
+#define FFMPEG_NOMEDIA "ffmpeg_nomedia"
 
 #endif //MY_APPLICATION_UTIL_H

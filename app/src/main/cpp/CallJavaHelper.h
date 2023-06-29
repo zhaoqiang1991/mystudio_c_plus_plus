@@ -5,7 +5,7 @@
 #ifndef MY_APPLICATION_CALLJAVAHELPER_H
 #define MY_APPLICATION_CALLJAVAHELPER_H
 
-using namespace std;
+
 
 #include <jni.h>
 #include <iostream>
@@ -15,7 +15,7 @@ using namespace std;
  */
 class CallJavaHelper {
 public:
-    CallJavaHelper(JavaVM *vm, JNIEnv *env, const jobject *jobj);
+    CallJavaHelper(JavaVM *vm, JNIEnv *env, const jobject &jobj);
 
     virtual ~CallJavaHelper();
 

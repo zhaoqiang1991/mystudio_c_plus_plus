@@ -25,55 +25,50 @@ using namespace std;
  */
 
 class TigerFFmpeg {
+    friend void* async_stop(void* args);
 public:
-    TigerFFmpeg(CallJavaHelper *callJavaHelper, const char *dataSource);
+    TigerFFmpeg(CallJavaHelper *javaCallHelper, const char *dataSource);
 
-    //TigerFFmpeg(CallJavaHelper *callJavaHelper, char *dataSource);
-
-    virtual ~TigerFFmpeg();
+    ~TigerFFmpeg();
 
     void prepare();
 
     void prepareFFmpeg();
 
     void start();
-    void _start();
+
+    void play();
+
+    void setRenderCallback(RenderFrame renderFrame);
 
     void stop();
 
-    void seek(int progress);
+    int getDuration() {
+        return duration;
+    }
 
-    static void *prepare_FFmpeg(void *args);
+    void seek(int i);
 
-    void setRenderFrameCallback(RenderFrame callback);
-
-    int getDuration();
-
-public:
-    CallJavaHelper *callJavaHelper;
+private:
     char *url;
+    CallJavaHelper *javaCallHelper;
 
-    //准备，播放，停止都放在子线程中
     pthread_t pid_prepare;
     pthread_t pid_play;
     pthread_t pid_stop;
-    AVFormatContext *formatContext = nullptr;
 
-    //声明一个指针的时候，必须需要初始化，不然会出现各种奇怪问题
-    AudioChannel *audioChannel = nullptr;
-    VideoChannel *videoChannel = nullptr;
-    RenderFrame callback = nullptr;
+    pthread_mutex_t seekMutex;
+    AVFormatContext *formatContext = 0;
 
-    pthread_mutex_t seekLock;
-
-    //todo 缺少ffmpeg相关的接口
-    //时长
     int duration;
-    //是否在播放
-    int isPlaying;
 
-    //是否在拖动
-    int isSeek;
+    RenderFrame renderFrame;
+
+    AudioChannel *audioChannel = 0;
+    VideoChannel *videoChannel = 0;
+
+    bool isPlaying;
+    bool isSeek = 0;
 };
 
 

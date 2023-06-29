@@ -11,9 +11,9 @@
  * @param env
  * @param _jobj
  */
-CallJavaHelper::CallJavaHelper(JavaVM *vm, JNIEnv *env, const jobject *_jobj) : _vm(vm), env(env) {
+CallJavaHelper::CallJavaHelper(JavaVM *vm, JNIEnv *env, const jobject &_jobj) : _vm(vm), env(env) {
     //之所以使用全局的是因为整个播放的过程都需要，如果是局部的话，会在方法栈调用完毕被回收
-    jobj = env->NewGlobalRef(*_jobj);
+    jobj = env->NewGlobalRef(_jobj);
     jclass clzz = env->GetObjectClass(jobj);
 
     this->jmid_onprepare = env->GetMethodID(clzz, "onPrepared", "()V");
@@ -23,8 +23,9 @@ CallJavaHelper::CallJavaHelper(JavaVM *vm, JNIEnv *env, const jobject *_jobj) : 
 
 CallJavaHelper::~CallJavaHelper() {
     //回收资源
-    this->env->DeleteGlobalRef(this->jobj);
-    this->jobj = nullptr;
+   //todo 这块需要在检查看下，因为env是不能夸线程的
+   /* this->env->DeleteGlobalRef(this->jobj);
+    this->jobj = nullptr;*/
 
 }
 
@@ -33,7 +34,7 @@ void CallJavaHelper::onError(int threadId, jstring errorDesc) {
         //子线程,必须切把navite线程挂在到javavm线程，因为JNIEnv不能跨线程调用
         jint status = _vm->AttachCurrentThread(&this->env, 0);
         if (status > 0) {
-            LOGD("onError errorDesc = %s\n", errorDesc);
+            //LOGD("onError errorDesc = %s\n", errorDesc);
             return;
         }
         this->env->CallVoidMethod(this->jobj, this->jmid_onerror,threadId,errorDesc);

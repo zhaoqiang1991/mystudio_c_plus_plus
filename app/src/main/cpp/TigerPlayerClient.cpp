@@ -18,9 +18,11 @@ CallJavaHelper *javaCallHelper = 0;
 ANativeWindow *window = 0;
 pthread_mutex_t mutext = PTHREAD_MUTEX_INITIALIZER;
 
+static const char *className = "com/example/myapplication/player/TigerPlayer";
 
 extern "C" {
-#include <libavutil/imgutils.h>}
+#include <libavutil/imgutils.h>
+}
 
 void renderFrame(uint8_t *data, int linesize, int w, int h) {
     pthread_mutex_lock(&mutext);
@@ -54,28 +56,10 @@ void renderFrame(uint8_t *data, int linesize, int w, int h) {
 }
 
 
-
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
-    javaVM = vm;
-//    av_log_set_level(AV_LOG_INFO);
-//    av_log_set_callback(callback);
-    return JNI_VERSION_1_4;
-}
-
-
-#endif
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_myapplication_player_TigerPlayer_native_1start(JNIEnv *env, jobject thiz) {
-    if (ffmpeg) {
-        ffmpeg->start();
-    }
-}
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_myapplication_player_TigerPlayer_native_1prepare(JNIEnv *env, jobject instance,
-                                                                  jstring dataSource_) {
-
+/**
+ * 本地方法
+ */
+static void player_native_prepare(JNIEnv *env, jobject instance, jstring dataSource_) {
     const char *dataSource = env->GetStringUTFChars(dataSource_, 0);
     javaCallHelper = new CallJavaHelper(javaVM, env, instance);
     ffmpeg = new TigerFFmpeg(javaCallHelper, dataSource);
@@ -83,23 +67,22 @@ Java_com_example_myapplication_player_TigerPlayer_native_1prepare(JNIEnv *env, j
     ffmpeg->prepare();
     env->ReleaseStringUTFChars(dataSource_, dataSource);
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_myapplication_player_TigerPlayer_native_1set_1surface(JNIEnv *env, jobject thiz,
-                                                                       jobject surface) {
-    pthread_mutex_lock(&mutext);
-    //先释放之前的显示窗口
-    if (window) {
-        ANativeWindow_release(window);
-        window = 0;
+
+/**
+ * start
+ */
+void player_native_start(JNIEnv *env, jobject thiz) {
+    LOGD("======player_native_start 调用了");
+    LOGD("================================================");
+    if (ffmpeg) {
+        ffmpeg->start();
     }
-    //创建新的窗口用于视频显示
-    window = ANativeWindow_fromSurface(env, surface);
-    pthread_mutex_unlock(&mutext);
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_myapplication_player_TigerPlayer_native_1stop(JNIEnv *env, jobject thiz) {
+
+/**
+ * start
+ */
+void player_native_stop(JNIEnv *env, jobject thiz) {
     if (ffmpeg) {
         ffmpeg->stop();
         ffmpeg = 0;
@@ -109,9 +92,36 @@ Java_com_example_myapplication_player_TigerPlayer_native_1stop(JNIEnv *env, jobj
         javaCallHelper = 0;
     }
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_myapplication_player_TigerPlayer_native_1release(JNIEnv *env, jobject thiz) {
+
+/**
+ * player_setSurface  设置给native的Surface画布，来进行画画，渲染视频数据
+ */
+void player_setSurface(JNIEnv *env, jobject thiz, jobject surface) {
+    pthread_mutex_lock(&mutext);
+    //先释放之前的显示窗口
+    if (window) {
+        ANativeWindow_release(window);
+        window = 0;
+    }
+    //创建新的窗口用于视频显示
+    window = ANativeWindow_fromSurface(env, surface);
+    pthread_mutex_unlock(&mutext);
+
+}
+
+
+/**
+ * start
+ */
+void player_native_seek(JNIEnv *env, jobject thiz, jint progress) {
+    LOGD("======native_seek 调用了");
+    LOGD("================================================");
+    if (ffmpeg){
+        ffmpeg->seek(progress);
+    }
+}
+
+void player_release(JNIEnv *env, jobject thize) {
     pthread_mutex_lock(&mutext);
     if (window) {
         ANativeWindow_release(window);
@@ -119,20 +129,48 @@ Java_com_example_myapplication_player_TigerPlayer_native_1release(JNIEnv *env, j
     }
     pthread_mutex_unlock(&mutext);
 }
-extern "C"
-JNIEXPORT jint JNICALL
-Java_com_example_myapplication_player_TigerPlayer_native_1getDuration(JNIEnv *env, jobject thiz) {
+
+int player_getDuration(JNIEnv *env, jobject thize) {
     if (ffmpeg) {
         return ffmpeg->getDuration();
     }
     return 0;
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_myapplication_player_TigerPlayer_native_1seek(JNIEnv *env, jobject thiz,
-                                                               jint progress) {
-    if (ffmpeg) {
-        ffmpeg->seek(progress);
+
+/**
+ * 动态注册方法表
+ * 第一个参数：java里面写的jni方法
+ * 第二个参数：Java里面写的native方法对应的方法签名
+ * 第三个参数:本地方法
+ */
+static const JNINativeMethod jniNativeMethod[] = {
+        {"native_prepare",     "(Ljava/lang/String;)V",     (void *) player_native_prepare},
+        {"native_start",       "()V",                       (void *) player_native_start},
+        {"native_stop",        "()V",                       (void *) player_native_stop},
+        {"native_seek",        "(I)V",                      (void *) player_native_seek},
+        {"native_setSurface",  "(Landroid/view/Surface;)V", (void *) player_setSurface},
+        {"native_release",     "()V",                       (void *) player_release},
+        {"native_getDuration", "()I",                       (void *) player_getDuration}
+
+
+};
+
+
+int JNI_OnLoad(JavaVM *vm, void *r) {
+    LOGD("======JNI_OnLoad 调用了");
+    javaVM = vm;
+    JNIEnv *jniEnv = 0;
+    jint ref = vm->GetEnv(reinterpret_cast<void **>(&jniEnv), JNI_VERSION_1_6);
+    if (ref != JNI_OK) {
+        LOGD("======GetEnv失败了");
+        return -1;
     }
+
+    jclass clazz = jniEnv->FindClass(className);
+
+    jniEnv->RegisterNatives(clazz, jniNativeMethod,
+                            sizeof(jniNativeMethod) / sizeof(JNINativeMethod));
+    return JNI_VERSION_1_4;
 }
-}
+
+#endif

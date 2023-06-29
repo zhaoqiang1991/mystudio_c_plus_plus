@@ -27,7 +27,7 @@ public class TigerPlayer implements SurfaceHolder.Callback {
             holder.removeCallback(this);
         }
         holder = surfaceView.getHolder();
-        native_set_surface(holder.getSurface());
+        native_setSurface(holder.getSurface());
         holder.addCallback(this);
     }
 
@@ -75,7 +75,7 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-        native_set_surface(holder.getSurface());
+        native_setSurface(holder.getSurface());
     }
 
     @Override
@@ -113,7 +113,7 @@ public class TigerPlayer implements SurfaceHolder.Callback {
         }.start();
     }
 
-   /* private native void native_prepare(String url);
+    private native void native_prepare(String url);
 
     private native void native_start();
 
@@ -126,9 +126,9 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     private native void native_release();
 
-    private native int native_getDuration();*/
+    private native int native_getDuration();
 
-    private native void native_start();
+    /*private native void native_start();
 
     private native void native_prepare(String dataSource);
 
@@ -140,5 +140,5 @@ public class TigerPlayer implements SurfaceHolder.Callback {
 
     private native int native_getDuration();
 
-    private native void native_seek(int progress);
+    private native void native_seek(int progress);*/
 }

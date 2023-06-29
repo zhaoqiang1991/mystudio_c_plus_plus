@@ -51,7 +51,7 @@ VideoChannel::VideoChannel(int id, CallJavaHelper *javaCallHelper, AVCodecContex
                            AVRational base, int fps)
         : BaseChannel(
         id, javaCallHelper, avCodecContext, base), fps(fps) {
-    frame_queue.setReleaseHandle(releaseAvFrame);
+
     frame_queue.setSyncHandle(dropFrame);
 }
 

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.10.2)
 #这个project引用的名字就是未来在java工程里面引用到的库名字
 #比如 System.loadLibrary("native");
 project("tigerPlayer")
+# 引入指定目录下的CMakeLists.txt
+add_subdirectory(src/main/cpp/librtmp)
 #指定头文件的搜索路径 ,这个必须 放在add_library之前，就是配置的信息一定要放在最前面
 include_directories(src/main/cpp/include)
 #指定编译路径
@@ -22,9 +24,9 @@ message("CMAKE_CXX_FLAGS= "${CMAKE_CXX_FLAGS})
 
 #定义宏开关
 #add_compile_definitions(ENABLE_JNI_ONLOAD)
-add_definitions(-DENABLE_JNI_ONLOAD)
+add_definitions(-DENABLE_LIVE_JNI_ONLOAD)
 
-add_library(tigerPlayer SHARED ${SOURCE})
+add_library(tigerPlayer SHARED ${SOURCE})#src/main/cpp/LiveClient.cpp
 
 
 find_library(
@@ -52,4 +54,6 @@ target_link_libraries(
         z
         OpenSLES
         android
+        rtmp
+        x264
         ${log-lib} )

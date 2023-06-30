@@ -197,16 +197,17 @@ void AudioChannel::initOpenSL() {
 
 
 int AudioChannel::getPcm() {
+    LOGD("==========getPcm 调用");
     int data_size = 0;
     AVFrame *frame = 0;
-    while (isPlaying) {
+    if (isPlaying) { //这块可以不用使用while 这种写法,因为opensl es里面在播放的时候这个会不断的回调到这里
         int ret = frame_queue.pop(frame);
-        if (!isPlaying) {
+        /*if (!isPlaying) {
             break;
         }
         if (!ret) {
             continue;
-        }
+        }*/
         // 计算转换后的sample个数  类似 a * b / c
         // swr_get_delay： 延迟时间:  输入了10个 数据，可能这次转换只转换了8个数据，那么还剩余2个 这一个函数就是得到上一次剩余的这个2
         // av_rescale_rnd： 以3为单位的1 转为以2为单位
@@ -228,7 +229,7 @@ int AudioChannel::getPcm() {
         if (javaCallHelper) {
             javaCallHelper->onProgress(THREAD_CHILD, clock);
         }
-        break;
+       // break;
     }
     releaseAvFrame(frame);
     return data_size;

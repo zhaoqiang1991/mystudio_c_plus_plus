@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.myapplication.bean.Student;
 import com.example.myapplication.databinding.ActivityMainBinding;
+import com.example.myapplication.live.LiveActivity;
 import com.example.myapplication.player.PlayerActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -65,6 +66,17 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        binding.startLiveTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //开始直播
+                Intent intent = new Intent(MainActivity.this, LiveActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
     }
 
     private void method11() {

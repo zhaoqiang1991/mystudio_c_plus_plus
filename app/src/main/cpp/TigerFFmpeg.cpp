@@ -174,6 +174,13 @@ void TigerFFmpeg::play() {
                 videoChannel->pkt_queue.push(packet);
             }
         } else if (ret == AVERROR_EOF) {
+            //释放，防止内存泄露
+            if(videoChannel){
+                videoChannel->releaseAvPacket(packet);
+            }
+            if(audioChannel){
+                audioChannel->releaseAvPacket(packet);
+            }
             //读取完毕 但是不一定播放完毕
             if (videoChannel->pkt_queue.empty() && videoChannel->frame_queue.empty() &&
                 audioChannel->pkt_queue.empty() && audioChannel->frame_queue.empty()) {
@@ -182,6 +189,13 @@ void TigerFFmpeg::play() {
             }
             //因为seek 的存在，就算读取完毕，依然要循环 去执行av_read_frame(否则seek了没用...)
         } else {
+            //释放，防止内存泄露
+            if(videoChannel){
+                videoChannel->releaseAvPacket(packet);
+            }
+            if(audioChannel){
+                audioChannel->releaseAvPacket(packet);
+            }
             break;
         }
 

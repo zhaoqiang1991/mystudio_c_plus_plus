@@ -9,6 +9,7 @@
 #include <x264.h>
 #include "safe_queue.h"
 #include "LiveVideoChannel.h"
+#include "LiveAudioChannel.h"
 
 static const char *className = "com/example/myapplication/live/LivePushClient";
 
@@ -18,6 +19,7 @@ JavaVM *javaVM = NULL;
 //发送给服务端的数据
 SafeQueue<RTMPPacket *> packets;
 LiveVideoChannel *videoChannel = NULL;
+LiveAudioChannel *audioChannel;
 bool isStart = false;
 int readyPushing = 0;
 uint32_t start_time;
@@ -47,15 +49,18 @@ void live_native_init(JNIEnv *env, jobject thiz) {
     //准备编码，以及把编码后的数据放在一个队列里面，生产者，消费者模型，只有队列中有数据，就会
     //不断的取数据发给服务端,这种生产者消费者编程模型特别的重要
     videoChannel = new LiveVideoChannel();
+    audioChannel = new LiveAudioChannel();
+
     videoChannel->setVideoCallback(callback);
+    audioChannel->setAudioCallback(callback);
     packets.setReleaseHandle(releasePackets);
 }
 
 void live_native_push_video(JNIEnv *env, jobject thiz, jbyteArray data_) {
 
-   /* if (!videoChannel || !readyPushing) {
-        return;
-    }*/
+    /* if (!videoChannel || !readyPushing) {
+         return;
+     }*/
     LOGD("======live_native_push_video 调用了");
     jbyte *data = env->GetByteArrayElements(data_, NULL);
     videoChannel->encodeData(data);
@@ -74,7 +79,7 @@ void live_native_video_encInfo(JNIEnv *env, jobject thiz, jint w, jint h,
 void *start(void *args) {
     char *url = static_cast<char *>(args);
     RTMP *rtmp = NULL;
-    LOGD("======rtmp start 调用了 url = %s",url);
+    LOGD("======rtmp start 调用了 url = %s", url);
     //写do while是为了方便退出循环，break
     do {
         rtmp = RTMP_Alloc();
@@ -108,6 +113,8 @@ void *start(void *args) {
         //表示可以开始推流了
         readyPushing = 1;
         packets.setWork(1);
+        //保证第一个数据是 aac解码数据包（序列包）
+        callback(audioChannel->getAudioTag());
         RTMPPacket *packet = 0;
         while (readyPushing) {
             packets.pop(packet);
@@ -166,7 +173,10 @@ void live_native_start(JNIEnv *env, jobject instance, jstring path_) {
  */
 void live_native_stop(JNIEnv *env, jobject thiz) {
     LOGD("======live_native_stop 调用了");
-
+    readyPushing = 0;
+    //必须关闭队列，否则会产生死锁
+    packets.setWork(0);
+    pthread_join(pid,0);
 }
 
 /**
@@ -174,8 +184,36 @@ void live_native_stop(JNIEnv *env, jobject thiz) {
  */
 void live_native_release(JNIEnv *env, jobject thiz) {
     LOGD("======live_native_stop 调用了");
-
+    DELETE(videoChannel);
+    DELETE(audioChannel);
 }
+
+jint live_native_getInputSamples(JNIEnv *env, jobject thiz) {
+    LOGD("======live_native_getInputSamples 调用了");
+    if (audioChannel) {
+        return audioChannel->getInputSamples();
+    }
+    return -1;
+}
+
+void live_native_setAudioEncInfo(JNIEnv *env, jobject thiz, jint sampleRateInHz, jint channels) {
+    LOGD("======live_native_stop 调用了");
+    if (audioChannel) {
+        audioChannel->setAudioEncInfo(sampleRateInHz, channels);
+    }
+}
+
+void live_native_push_audio(JNIEnv *env, jobject thiz, jbyteArray data_) {
+
+     /*if (!audioChannel || !readyPushing) {
+         return;
+     }*/
+    LOGD("======live_native_push_audio 调用了");
+    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    audioChannel->encodeData(data);
+    env->ReleaseByteArrayElements(data_, data, 0);
+};
+
 
 /**
  * 动态注册方法表
@@ -189,7 +227,10 @@ static const JNINativeMethod jniNativeMethod[] = {
         {"native_setVideoEncInfo", "(IIII)V",               (void *) live_native_video_encInfo},
         {"native_start",           "(Ljava/lang/String;)V", (void *) live_native_start},
         {"native_stop",            "()V",                   (void *) live_native_stop},
-        {"native_release",         "()V",                   (void *) live_native_release}
+        {"native_release",         "()V",                   (void *) live_native_release},
+        {"getInputSamples",        "()I",                   (void *) live_native_getInputSamples},
+        {"native_setAudioEncInfo", "(II)V",                 (void *) live_native_setAudioEncInfo},
+        {"native_pushAudio",       "([B)V",                 (void *) live_native_push_audio}
 };
 
 int JNI_OnLoad(JavaVM *vm, void *r) {
@@ -213,5 +254,3 @@ int JNI_OnLoad(JavaVM *vm, void *r) {
 }
 
 #endif
-
-

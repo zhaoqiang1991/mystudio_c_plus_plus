@@ -56,4 +56,5 @@ target_link_libraries(
         android
         rtmp
         x264
+        faac
         ${log-lib} )

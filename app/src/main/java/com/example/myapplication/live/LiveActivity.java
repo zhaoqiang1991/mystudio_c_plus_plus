@@ -30,12 +30,9 @@ public class LiveActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live);
         mSurfaceView = this.findViewById(R.id.surfaceView);
-        livePusher = new LivePushClient(this, 800, 480, 800_000, 10, Camera.CameraInfo.CAMERA_FACING_BACK);
+        livePusher = new LivePushClient(this, 800, 480, 800_000, 10, Camera.CameraInfo.CAMERA_FACING_FRONT);
         //  设置摄像头预览的界面
         livePusher.setPreviewDisplay(mSurfaceView.getHolder());
-
-
-
     }
 
     private void startPreviewWithPermission() {
@@ -49,7 +46,7 @@ public class LiveActivity extends AppCompatActivity {
                         try {
                             Toast.makeText(LiveActivity.this, "相机授权申请成功", Toast.LENGTH_SHORT).show();
                             //申请成功后，可以调用相机拍摄/视频等操作
-                            livePusher.startLive("rtmp://192.168.0.160/myapp/mystream");
+                            livePusher.startLive("rtmp://10.2.154.99/myapp/mystream");
                         } catch (Exception ignored) {
                             Toast.makeText(LiveActivity.this, "相机授权申请报错", Toast.LENGTH_SHORT).show();
                         }
@@ -70,10 +67,15 @@ public class LiveActivity extends AppCompatActivity {
 
     public void startLive(View view) {
         startPreviewWithPermission();
-
     }
 
     public void stopLive(View view) {
         livePusher.stopLive();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        livePusher.native_release();
     }
 }

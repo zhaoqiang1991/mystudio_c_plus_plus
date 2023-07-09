@@ -15,7 +15,7 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     private final TigerView mView;
     private CameraHelper mCameraHelper;
     private SurfaceTexture mSurfaceTexture;
-    float[] mtx = new float[1];
+    float[] mtx = new float[16];
     private ScreeFilter mScreeFilter;
     private int[] mTextures;
 

@@ -11,20 +11,18 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import javax.microedition.khronos.opengles.GL;
-
 /**
  * 负责把opengl采集到的数据向屏幕上面显示出来
  */
 public class ScreeFilter {
 
-    private final int mProgram;
-    private final int vPosition;
-    private final int vCoord;
-    private final int vMatrix;
-    private final int vTexture;
-    private final FloatBuffer mVertexBuffer;
-    private final FloatBuffer mTextureBuffer;
+    private FloatBuffer mTextureBuffer;
+    private FloatBuffer mVertexBuffer;
+    private int vTexture;
+    private int vMatrix;
+    private int vCoord;
+    private int vPosition;
+    private int mProgram;
     private int mWidth;
     private int mHeight;
 
@@ -53,9 +51,9 @@ public class ScreeFilter {
         int fShaderId = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
         GLES20.glShaderSource(fShaderId, fragSource);
         //编译着色器程序(编译着色器程序)
-        GLES20.glCompileShader(vShaderId);
+        GLES20.glCompileShader(fShaderId);
         //主动获取成功，失败,这个不是必须的，是为了方便定位错误
-        GLES20.glGetShaderiv(vShaderId, GLES20.GL_COMPILE_STATUS, status, 0);
+        GLES20.glGetShaderiv(fShaderId, GLES20.GL_COMPILE_STATUS, status, 0);
         if (status[0] != GLES20.GL_TRUE) {
             throw new IllegalStateException("screen filter 片元着色器配置失败");
         }
@@ -102,10 +100,22 @@ public class ScreeFilter {
         //纹理左边缓冲区
         mTextureBuffer = ByteBuffer.allocateDirect(4 * 2 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mTextureBuffer.clear();
-        float[] t = {-0.0f, 1.0f,
+       /* float[] t = {-0.0f, 1.0f,
                 1.0f, 1.0f,
                 0.0f, 0.0f,
-                1.0f, 0.0f};
+                1.0f, 0.0f};*/
+
+        //旋转之后
+        /*float[] t = {1.0f, 1.0f,
+                1.0f, 0.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f};
+*/
+        //翻转只有
+        float[] t = {1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 0.0f,
+                0.0f, 1.0f};
         mTextureBuffer.put(t);
     }
 

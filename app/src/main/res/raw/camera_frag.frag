@@ -1,5 +1,4 @@
 #extension GL_OES_EGL_image_external : require
-#version 120
 //SurfaceTexture比较特殊
 //指定float数据是什么精度的
 precision mediump float;

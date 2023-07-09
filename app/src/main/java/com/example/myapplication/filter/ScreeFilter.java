@@ -111,7 +111,7 @@ public class ScreeFilter {
                 0.0f, 1.0f,
                 0.0f, 0.0f};
 */
-        //翻转只有
+        //翻转之后
         float[] t = {1.0f, 0.0f,
                 1.0f, 1.0f,
                 0.0f, 0.0f,

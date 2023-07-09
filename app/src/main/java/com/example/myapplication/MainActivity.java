@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.example.myapplication.bean.Student;
 import com.example.myapplication.databinding.ActivityMainBinding;
 import com.example.myapplication.live.LiveActivity;
+import com.example.myapplication.opengl.GLActivity;
 import com.example.myapplication.player.PlayerActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -72,6 +73,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //开始直播
                 Intent intent = new Intent(MainActivity.this, LiveActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        binding.startOpenglTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //开始直播
+                Intent intent = new Intent(MainActivity.this, GLActivity.class);
                 startActivity(intent);
             }
         });

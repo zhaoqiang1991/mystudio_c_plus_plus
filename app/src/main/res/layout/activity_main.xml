@@ -45,5 +45,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/start_player_tv" />
 
+    <TextView
+        android:id="@+id/start_opengl_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="打开opengl摄像机"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/start_live_tv" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

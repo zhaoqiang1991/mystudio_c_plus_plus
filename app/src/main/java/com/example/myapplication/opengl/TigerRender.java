@@ -5,6 +5,7 @@ import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
+import com.example.myapplication.filter.CameraFilter;
 import com.example.myapplication.filter.ScreeFilter;
 import com.example.myapplication.utils.CameraHelper;
 
@@ -18,6 +19,7 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     float[] mtx = new float[16];
     private ScreeFilter mScreeFilter;
     private int[] mTextures;
+    private CameraFilter mCameraFilter;
 
     public TigerRender(TigerView tigerView) {
         mView = tigerView;
@@ -42,6 +44,7 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //设置有一帧新的数据到来的时候，回调监听
         mSurfaceTexture.setOnFrameAvailableListener(this);
         //必须要在GlThread里面创建着色器程序
+        mCameraFilter = new CameraFilter(mView.getContext());
         mScreeFilter = new ScreeFilter(mView.getContext());
     }
 
@@ -56,7 +59,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mCameraHelper.startPreview(mSurfaceTexture);
-        mScreeFilter.onReady(width,height);
+        mCameraFilter.onReady(width, height);
+        mScreeFilter.onReady(width, height);
     }
 
     /**
@@ -79,8 +83,11 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //这种采样器,正常的是sample2D
 
         mSurfaceTexture.getTransformMatrix(mtx);
+        mCameraFilter.setMatrix(mtx);
+        int id = mCameraFilter.onDrawFrame(mTextures[0]);
+        //在这里添加各种效果，相当于责任链
         //开始画画
-        mScreeFilter.onDrawFrame(mTextures[0],mtx);
+        mScreeFilter.onDrawFrame(id);
 
     }
 

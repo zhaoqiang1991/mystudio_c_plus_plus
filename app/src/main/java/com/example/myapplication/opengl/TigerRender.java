@@ -2,12 +2,17 @@ package com.example.myapplication.opengl;
 
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.opengl.EGL14;
+import android.opengl.EGLContext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
 import com.example.myapplication.filter.CameraFilter;
 import com.example.myapplication.filter.ScreeFilter;
+import com.example.myapplication.record.MediaRecorder;
 import com.example.myapplication.utils.CameraHelper;
+
+import java.io.IOException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -20,6 +25,7 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     private ScreeFilter mScreeFilter;
     private int[] mTextures;
     private CameraFilter mCameraFilter;
+    private MediaRecorder mMediaRecorder;
 
     public TigerRender(TigerView tigerView) {
         mView = tigerView;
@@ -46,6 +52,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //必须要在GlThread里面创建着色器程序
         mCameraFilter = new CameraFilter(mView.getContext());
         mScreeFilter = new ScreeFilter(mView.getContext());
+        EGLContext eglContext = EGL14.eglGetCurrentContext();
+        mMediaRecorder = new MediaRecorder(mView.getContext(), "/mnt/sdcard/test.mp4", CameraHelper.HEIGHT, CameraHelper.WIDTH, eglContext);
     }
 
     /**
@@ -89,6 +97,7 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //开始画画
         mScreeFilter.onDrawFrame(id);
 
+        mMediaRecorder.encodeFrame(id, mSurfaceTexture.getTimestamp());
     }
 
     /**
@@ -102,5 +111,17 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
             //开始渲染，有一帧新的图像，就开始调用GLSurfaceView的onDrawFrame进行绘制
             mView.requestRender();
         }
+    }
+
+    public void startRecord(float speed) {
+        try {
+            mMediaRecorder.start(speed);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stopRecord() {
+        mMediaRecorder.stop();
     }
 }

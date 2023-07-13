@@ -61,6 +61,7 @@ public class GLActivity extends AppCompatActivity {
              */
             @Override
             public void onRecordStop() {
+                Toast.makeText(GLActivity.this, "停止录制了", Toast.LENGTH_SHORT).show();
                 mTigerView.stopRecord();
             }
         });

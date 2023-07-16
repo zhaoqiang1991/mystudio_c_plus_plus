@@ -86,6 +86,7 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //开启预览
         mCameraHelper.startPreview(mSurfaceTexture);
         mCameraFilter.onReady(width, height);
+        mBigEyeFilter.onReady(width,height);
         mScreeFilter.onReady(width, height);
     }
 

@@ -1,5 +1,6 @@
 package com.example.myapplication.opengl;
 
+import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.EGL14;
@@ -7,17 +8,20 @@ import android.opengl.EGLContext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
+import com.example.myapplication.face.FaceTrack;
+import com.example.myapplication.filter.BigEyeFilter;
 import com.example.myapplication.filter.CameraFilter;
 import com.example.myapplication.filter.ScreeFilter;
 import com.example.myapplication.record.MediaRecorder;
 import com.example.myapplication.utils.CameraHelper;
+import com.example.myapplication.utils.OpenGLUtils;
 
 import java.io.IOException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
+public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener, Camera.PreviewCallback {
     private final TigerView mView;
     private CameraHelper mCameraHelper;
     private SurfaceTexture mSurfaceTexture;
@@ -26,9 +30,15 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     private int[] mTextures;
     private CameraFilter mCameraFilter;
     private MediaRecorder mMediaRecorder;
+    private FaceTrack mFaceTrack;
+    private BigEyeFilter mBigEyeFilter;
 
     public TigerRender(TigerView tigerView) {
         mView = tigerView;
+        Context context = mView.getContext();
+        //拷贝 模型
+        OpenGLUtils.copyAssets2SdCard(context, "lbpcascade_frontalface.xml", "/sdcard/lbpcascade_frontalface.xml");
+        OpenGLUtils.copyAssets2SdCard(context, "seeta_fa_v1.1.bin", "/sdcard/seeta_fa_v1.1.bin");
     }
 
     /**
@@ -41,7 +51,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
      */
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        mCameraHelper = new CameraHelper(Camera.CameraInfo.CAMERA_FACING_BACK);
+        mCameraHelper = new CameraHelper(Camera.CameraInfo.CAMERA_FACING_FRONT);
+        mCameraHelper.setPreviewCallback(this);
         //准备好摄像头绘制的画布
         //通过open gl创建一个纹理id
         mTextures = new int[1];
@@ -52,6 +63,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //必须要在GlThread里面创建着色器程序
         mCameraFilter = new CameraFilter(mView.getContext());
         mScreeFilter = new ScreeFilter(mView.getContext());
+        mBigEyeFilter = new BigEyeFilter(mView.getContext());
+
         EGLContext eglContext = EGL14.eglGetCurrentContext();
         mMediaRecorder = new MediaRecorder(mView.getContext(), "/mnt/sdcard/test.mp4", CameraHelper.HEIGHT, CameraHelper.WIDTH, eglContext);
     }
@@ -66,6 +79,11 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
      */
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        mFaceTrack = new FaceTrack("/sdcard/lbpcascade_frontalface.xml",
+                "/sdcard/seeta_fa_v1.1.bin", mCameraHelper);
+        //启动跟踪器
+        mFaceTrack.startTrack();
+        //开启预览
         mCameraHelper.startPreview(mSurfaceTexture);
         mCameraFilter.onReady(width, height);
         mScreeFilter.onReady(width, height);
@@ -93,6 +111,9 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         mSurfaceTexture.getTransformMatrix(mtx);
         mCameraFilter.setMatrix(mtx);
         int id = mCameraFilter.onDrawFrame(mTextures[0]);
+        mBigEyeFilter.setFace(mFaceTrack.getFace());
+        id = mBigEyeFilter.onDrawFrame(id);
+
         //在这里添加各种效果，相当于责任链
         //开始画画
         mScreeFilter.onDrawFrame(id);
@@ -121,7 +142,18 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         }
     }
 
+    public void onSurfaceDestroyed() {
+        mCameraHelper.stopPreview();
+        mFaceTrack.stopTrack();
+    }
+
     public void stopRecord() {
         mMediaRecorder.stop();
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        //data送去进行人脸检测和关键点定位
+        mFaceTrack.detector(data);
     }
 }

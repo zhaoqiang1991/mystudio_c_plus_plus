@@ -7,6 +7,11 @@ project("tigerPlayer")
 add_subdirectory(src/main/cpp/librtmp)
 #指定头文件的搜索路径 ,这个必须 放在add_library之前，就是配置的信息一定要放在最前面
 include_directories(src/main/cpp/include)
+
+
+add_subdirectory(src/main/cpp/FaceAlignment)
+include_directories(src/main/cpp/FaceAlignment/include)
+
 #指定编译路径
 file(GLOB SOURCE src/main/cpp/*.cpp)
 #file(GLOB SOURCE "src/main/cpp/nativeClient.cpp")
@@ -21,10 +26,11 @@ set(my_lib_path ${CMAKE_SOURCE_DIR}/src/main/cpp/libs/${ANDROID_ABI})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${my_lib_path}")
 message("CMAKE_SOURCE_DIR= "${CMAKE_SOURCE_DIR})
 message("CMAKE_CXX_FLAGS= "${CMAKE_CXX_FLAGS})
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -L${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}" )
 #定义宏开关
 #add_compile_definitions(ENABLE_JNI_ONLOAD)
-add_definitions(-DENABLE_LIVE_JNI_ONLOAD)
+#add_definitions(-DENABLE_LIVE_JNI_ONLOAD)
+add_definitions(-DENABLE_FACE_DETECT_JNI_ONLOAD)
 
 add_library(tigerPlayer SHARED ${SOURCE})#src/main/cpp/LiveClient.cpp
 
@@ -57,4 +63,6 @@ target_link_libraries(
         rtmp
         x264
         faac
+        opencv_java3
+        seeta_fa_lib
         ${log-lib} )

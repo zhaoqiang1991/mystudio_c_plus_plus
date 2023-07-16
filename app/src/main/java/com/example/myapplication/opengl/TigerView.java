@@ -3,6 +3,7 @@ package com.example.myapplication.opengl;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.SurfaceHolder;
 
 public class TigerView extends GLSurfaceView {
 
@@ -65,5 +66,11 @@ public class TigerView extends GLSurfaceView {
 
     public void stopRecord() {
         mTigerRender.stopRecord();
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        super.surfaceDestroyed(holder);
+        mTigerRender.onSurfaceDestroyed();
     }
 }

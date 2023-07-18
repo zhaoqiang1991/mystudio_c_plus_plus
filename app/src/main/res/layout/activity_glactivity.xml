@@ -90,4 +90,35 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <CheckBox
+            android:id="@+id/beauty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="美颜" />
+
+        <CheckBox
+            android:id="@+id/bigEye"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/beauty"
+            android:text="大眼"
+            app:layout_constraintStart_toEndOf="@id/bigEye"
+            app:layout_constraintTop_toTopOf="@id/bigEye" />
+
+        <CheckBox
+            android:id="@+id/stick"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/bigEye"
+            android:text="贴纸" />
+    </LinearLayout>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

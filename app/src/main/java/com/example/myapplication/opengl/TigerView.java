@@ -5,6 +5,8 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
+import com.example.myapplication.record.MediaRecorder;
+
 public class TigerView extends GLSurfaceView {
 
     private TigerRender mTigerRender;
@@ -13,6 +15,26 @@ public class TigerView extends GLSurfaceView {
 
     public void setSpeed(Speed speed) {
         mSpeed = speed;
+    }
+
+    public void setOnRecordFinishListener(MediaRecorder.OnRecordFinishListener listener) {
+        mTigerRender.setOnRecordFinishListener(listener);
+    }
+
+    public void switchCamera() {
+        mTigerRender.switchCamera();
+    }
+
+    public void enableStick(boolean isChecked) {
+        mTigerRender.enableStick(isChecked);
+    }
+
+    public void enableBeauty(boolean isChecked) {
+        mTigerRender.enableBeauty(isChecked);
+    }
+
+    public void enableBigEye(boolean isChecked) {
+        mTigerRender.enableBigEye(isChecked);
     }
 
     public enum Speed {

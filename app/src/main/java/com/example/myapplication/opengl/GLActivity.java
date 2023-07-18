@@ -2,15 +2,22 @@ package com.example.myapplication.opengl;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.blankj.utilcode.constant.PermissionConstants;
 import com.blankj.utilcode.util.PermissionUtils;
+import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.live.LiveActivity;
+import com.example.myapplication.record.MediaRecorder;
+import com.example.myapplication.video.VideoActivity;
 import com.example.myapplication.view.RecordButton;
 
 public class GLActivity extends AppCompatActivity {
@@ -93,5 +100,28 @@ public class GLActivity extends AppCompatActivity {
                 }
             }
         });
+
+        ((CheckBox)findViewById(R.id.beauty)).setOnCheckedChangeListener((buttonView, isChecked) -> mTigerView.enableBeauty(isChecked));
+
+        ((CheckBox)findViewById(R.id.bigEye)).setOnCheckedChangeListener((buttonView, isChecked) -> mTigerView.enableBigEye(isChecked));
+        ((CheckBox)findViewById(R.id.stick)).setOnCheckedChangeListener((buttonView, isChecked) -> mTigerView.enableStick(isChecked));
+
+        /**
+         * 录制完成
+         */
+        mTigerView.setOnRecordFinishListener(path -> runOnUiThread(() -> {
+            Intent intent = new Intent(GLActivity.this, VideoActivity.class);
+            intent.putExtra("path",path);
+            startActivity(intent);
+        }));
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP){
+            mTigerView.switchCamera();
+        }
+        return super.onTouchEvent(event);
+
     }
 }

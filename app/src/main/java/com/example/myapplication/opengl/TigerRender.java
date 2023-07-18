@@ -8,6 +8,7 @@ import android.opengl.EGLContext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
+import com.example.myapplication.face.Face;
 import com.example.myapplication.face.FaceTrack;
 import com.example.myapplication.filter.BeautyFilter;
 import com.example.myapplication.filter.BigEyeFilter;
@@ -36,6 +37,11 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     private BigEyeFilter mBigEyeFilter;
     private StickFilter mStickFilter;
     private BeautyFilter mBeautyFilter;
+
+    private int mHeigh;
+    private int mWidth;
+
+    private MediaRecorder.OnRecordFinishListener mListener;
 
     public TigerRender(TigerView tigerView) {
         mView = tigerView;
@@ -67,12 +73,14 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //必须要在GlThread里面创建着色器程序
         mCameraFilter = new CameraFilter(mView.getContext());
         mScreeFilter = new ScreeFilter(mView.getContext());
-        mBigEyeFilter = new BigEyeFilter(mView.getContext());
+
+        /*mBigEyeFilter = new BigEyeFilter(mView.getContext());
         mStickFilter = new StickFilter(mView.getContext());
-        mBeautyFilter = new BeautyFilter(mView.getContext());
+        mBeautyFilter = new BeautyFilter(mView.getContext());*/
 
         EGLContext eglContext = EGL14.eglGetCurrentContext();
         mMediaRecorder = new MediaRecorder(mView.getContext(), "/mnt/sdcard/test.mp4", CameraHelper.HEIGHT, CameraHelper.WIDTH, eglContext);
+        mMediaRecorder.setOnRecordFinishListener(mListener);
     }
 
     /**
@@ -85,6 +93,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
      */
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        mWidth = width;
+        mHeigh = height;
         mFaceTrack = new FaceTrack("/sdcard/lbpcascade_frontalface.xml",
                 "/sdcard/seeta_fa_v1.1.bin", mCameraHelper);
         //启动跟踪器
@@ -92,10 +102,12 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         //开启预览
         mCameraHelper.startPreview(mSurfaceTexture);
         mCameraFilter.onReady(width, height);
-        mBigEyeFilter.onReady(width,height);
         mScreeFilter.onReady(width, height);
-        mStickFilter.onReady(width,height);
-        mBeautyFilter.onReady(width,height);
+
+
+        /*mBigEyeFilter.onReady(width, height);
+        mStickFilter.onReady(width, height);
+        mBeautyFilter.onReady(width, height);*/
     }
 
     /**
@@ -120,12 +132,20 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         mSurfaceTexture.getTransformMatrix(mtx);
         mCameraFilter.setMatrix(mtx);
         int id = mCameraFilter.onDrawFrame(mTextures[0]);
-        mBigEyeFilter.setFace(mFaceTrack.getFace());
-        id = mBigEyeFilter.onDrawFrame(id);
 
-        mStickFilter.setFace(mFaceTrack.getFace());
-        id = mStickFilter.onDrawFrame(id);
-        id = mBeautyFilter.onDrawFrame(id);
+        Face face = mFaceTrack.getFace();
+        if (null != mBigEyeFilter) {
+            mBigEyeFilter.setFace(face);
+            id = mBigEyeFilter.onDrawFrame(id);
+        }
+        // 贴纸
+        if (null != mStickFilter) {
+            mStickFilter.setFace(face);
+            id = mStickFilter.onDrawFrame(id);
+        }
+        if (null != mBeautyFilter) {
+            id = mBeautyFilter.onDrawFrame(id);
+        }
 
         //在这里添加各种效果，相当于责任链
         //开始画画
@@ -168,5 +188,70 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     public void onPreviewFrame(byte[] data, Camera camera) {
         //data送去进行人脸检测和关键点定位
         mFaceTrack.detector(data);
+    }
+
+    public void switchCamera() {
+        mCameraHelper.switchCamera();
+    }
+
+    public void setOnRecordFinishListener(MediaRecorder.OnRecordFinishListener listener) {
+        if (null != mMediaRecorder) {
+            mMediaRecorder.setOnRecordFinishListener(listener);
+        }
+        mListener = listener;
+    }
+
+    public void enableStick(boolean isChecked) {
+        //向GL线程发布一个任务
+        //任务会放入一个任务队列， 并在gl线程中去执行
+        mView.queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                //Opengl线程
+                if (isChecked) {
+                    mStickFilter = new StickFilter(mView.getContext());
+                    mStickFilter.onReady(mWidth, mHeigh);
+                } else {
+                    mStickFilter.release();
+                    mStickFilter = null;
+                }
+            }
+        });
+    }
+
+    public void enableBeauty(boolean isChecked) {
+        //向GL线程发布一个任务
+        //任务会放入一个任务队列， 并在gl线程中去执行
+        mView.queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                //Opengl线程
+                if (isChecked) {
+                    mBeautyFilter = new BeautyFilter(mView.getContext());
+                    mBeautyFilter.onReady(mWidth, mHeigh);
+                } else {
+                    mBeautyFilter.release();
+                    mBeautyFilter = null;
+                }
+            }
+        });
+    }
+
+    public void enableBigEye(boolean isChecked) {
+        //向GL线程发布一个任务
+        //任务会放入一个任务队列， 并在gl线程中去执行
+        mView.queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                //Opengl线程
+                if (isChecked) {
+                    mBigEyeFilter = new BigEyeFilter(mView.getContext());
+                    mBigEyeFilter.onReady(mWidth, mHeigh);
+                } else {
+                    mBigEyeFilter.release();
+                    mBigEyeFilter = null;
+                }
+            }
+        });
     }
 }

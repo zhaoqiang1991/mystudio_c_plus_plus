@@ -9,9 +9,11 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
 import com.example.myapplication.face.FaceTrack;
+import com.example.myapplication.filter.BeautyFilter;
 import com.example.myapplication.filter.BigEyeFilter;
 import com.example.myapplication.filter.CameraFilter;
 import com.example.myapplication.filter.ScreeFilter;
+import com.example.myapplication.filter.StickFilter;
 import com.example.myapplication.record.MediaRecorder;
 import com.example.myapplication.utils.CameraHelper;
 import com.example.myapplication.utils.OpenGLUtils;
@@ -32,6 +34,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     private MediaRecorder mMediaRecorder;
     private FaceTrack mFaceTrack;
     private BigEyeFilter mBigEyeFilter;
+    private StickFilter mStickFilter;
+    private BeautyFilter mBeautyFilter;
 
     public TigerRender(TigerView tigerView) {
         mView = tigerView;
@@ -64,6 +68,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         mCameraFilter = new CameraFilter(mView.getContext());
         mScreeFilter = new ScreeFilter(mView.getContext());
         mBigEyeFilter = new BigEyeFilter(mView.getContext());
+        mStickFilter = new StickFilter(mView.getContext());
+        mBeautyFilter = new BeautyFilter(mView.getContext());
 
         EGLContext eglContext = EGL14.eglGetCurrentContext();
         mMediaRecorder = new MediaRecorder(mView.getContext(), "/mnt/sdcard/test.mp4", CameraHelper.HEIGHT, CameraHelper.WIDTH, eglContext);
@@ -88,6 +94,8 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         mCameraFilter.onReady(width, height);
         mBigEyeFilter.onReady(width,height);
         mScreeFilter.onReady(width, height);
+        mStickFilter.onReady(width,height);
+        mBeautyFilter.onReady(width,height);
     }
 
     /**
@@ -114,6 +122,10 @@ public class TigerRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         int id = mCameraFilter.onDrawFrame(mTextures[0]);
         mBigEyeFilter.setFace(mFaceTrack.getFace());
         id = mBigEyeFilter.onDrawFrame(id);
+
+        mStickFilter.setFace(mFaceTrack.getFace());
+        id = mStickFilter.onDrawFrame(id);
+        id = mBeautyFilter.onDrawFrame(id);
 
         //在这里添加各种效果，相当于责任链
         //开始画画

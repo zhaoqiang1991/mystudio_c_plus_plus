@@ -101,14 +101,32 @@ public class ScreeFilter {
         mTextureBuffer.clear();
 
         //定点着色器坐标
-        float[] f = {
+        //原始数据 数据有问题 是颠倒的
+      /*  float[] f = {
                 0.0f, 1.0f,
                 1.0f, 1.0f,
                 0.0f, 0.0f,
                 1.0f, 0.0f,
+        };*/
+
+        //向右旋转90度  数据是镜像的
+       /* float[] f = {
+                1.0f, 1.0f,
+                1.0f, 0.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+        };*/
+
+
+        //在第二步的基础之上进行水平翻转，就可以得到正确数据  这些旋转可以借助画一个坐标，然后在相册里面选装
+        float[] f = {
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 0.0f,
+                0.0f, 1.0f,
         };
 
-        mTextureBuffer.put(v);
+        mTextureBuffer.put(f);
 
 
     }

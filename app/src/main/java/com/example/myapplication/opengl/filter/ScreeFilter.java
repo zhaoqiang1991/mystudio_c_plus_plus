@@ -27,7 +27,7 @@ public class ScreeFilter {
     public ScreeFilter(Context mContext) {
         this.mContext = mContext;
         String vertetSource = OpenUtils.readRawTextFile(mContext.getApplicationContext(), R.raw.camera_vertex);
-        String fragSource = OpenUtils.readRawTextFile(mContext.getApplicationContext(), R.raw.camera_grey_frag);
+        String fragSource = OpenUtils.readRawTextFile(mContext.getApplicationContext(), R.raw.camera_sqlit_frag);
 
         //创建定点着色器
         int vshaderId = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);

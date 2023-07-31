@@ -7,12 +7,8 @@ import static android.opengl.GLES20.glBindTexture;
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform1i;
 
-import static com.example.myapplication.opengl.ShaderProgram.U_TEXTURE_UNIT;
-
 import android.content.Context;
-import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
-import android.util.SizeF;
 
 import com.example.myapplication.R;
 import com.example.myapplication.opengl.utils.OpenUtils;
@@ -31,7 +27,8 @@ public class PhotoFilter {
     private int mWidth;
     private int mHeight;
 
-    private FloatBuffer cubeBuffer;
+    private FloatBuffer vertBuffer;
+    private FloatBuffer fragBuffer;
 
 
     public PhotoFilter(Context mContext) {
@@ -92,24 +89,31 @@ public class PhotoFilter {
             uTextureUnitLocation[i] = glGetUniformLocation(mProgram, "u_TextureUnit" + i);
         }
 
-
-
-
         //定点着色器坐标
         float[] v = {
-                -1.0f, -1.0f, 0f, 1f,
-                1.0f, -1.0f, 1f, 1f,
-                -1.0f, 1.0f, 0f, 0f,
-                1.0f, 1.0f,  1f, 0f
-               /* -1.0f, -1.0f, 0f, 1f,
-                1.0f, -1.0f, 1f, 1f,
-                -1.0f, 1.0f, 0f, 0f,
-                1.0f, 1.0f, 1f, 0f,*/
-        };
-        cubeBuffer = ByteBuffer.allocateDirect(v.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        cubeBuffer.clear();
+                -1.0f, -1.0f,
+                1.0f, -1.0f,
+                -1.0f,  1.0f,
+                1.0f,  1.0f
 
-        cubeBuffer.put(v);
+        };
+
+        //纹理坐标
+        float[] f = {
+                0.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f
+
+        };
+        vertBuffer = ByteBuffer.allocateDirect(v.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        vertBuffer.clear();
+
+        vertBuffer.put(v);
+
+        fragBuffer = ByteBuffer.allocateDirect(f.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        fragBuffer.clear();
+        fragBuffer.put(f);
 
     }
 
@@ -121,20 +125,20 @@ public class PhotoFilter {
 
 
         //通过mVertexBuffer把cpu 中的数据传递到GPU里面的变量中
-        cubeBuffer.position(0);
+        vertBuffer.position(0);
         //坐标赋值
-        GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 4 * 4, cubeBuffer);
+        GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 2 * 4, vertBuffer);
         //第五个参数叫做步长(Stride)，它告诉我们在连续的顶点属性组之间的间隔。由于下个组位置数据在3个float之后，我们把步长设置为3 * sizeof(float)。
         // 要注意的是由于我们知道这个数组是紧密排列的（在两个顶点属性之间没有空隙）我们也可以设置为0来让OpenGL决定具体步长是多少（只有当数值是紧密排列时才可用）
         // 。一旦我们有更多的顶点属性，我们就必须更小心地定义每个顶点属性之间的间隔，我们在后面会看到更多的例子（译注: 这个参数的意思简单说就是从这个属性第
         // 二次出现的地方到整个数组0位置之间有多少字节）
         //激活数据
         GLES20.glEnableVertexAttribArray(vPosition);
-        cubeBuffer.position(0);
+        vertBuffer.position(0);
 
         //纹理赋值
-        cubeBuffer.position(2);
-        GLES20.glVertexAttribPointer(vCoord,2,GLES20.GL_FLOAT, false, 4 * 4, cubeBuffer);
+        fragBuffer.position(0);
+        GLES20.glVertexAttribPointer(vCoord,2,GLES20.GL_FLOAT, false, 2 * 4, fragBuffer);
         GLES20.glEnableVertexAttribArray(vCoord);
 
 

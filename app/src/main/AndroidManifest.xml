@@ -33,7 +33,7 @@
             android:name=".player.PlayerActivity"
             android:exported="false" />
         <activity
-            android:name=".opengl.PhtotoFilterActivity"
+            android:name=".opengl.OpenGlActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

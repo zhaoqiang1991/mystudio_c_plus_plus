@@ -1,0 +1,153 @@
+package com.example.myapplication.opengl.filter;
+
+import static android.opengl.GLES20.GL_TEXTURE0;
+import static android.opengl.GLES20.GL_TEXTURE_2D;
+import static android.opengl.GLES20.glActiveTexture;
+import static android.opengl.GLES20.glBindTexture;
+import static android.opengl.GLES20.glGetUniformLocation;
+import static android.opengl.GLES20.glUniform1i;
+
+import static com.example.myapplication.opengl.ShaderProgram.U_TEXTURE_UNIT;
+
+import android.content.Context;
+import android.opengl.GLES11Ext;
+import android.opengl.GLES20;
+
+import com.example.myapplication.R;
+import com.example.myapplication.opengl.utils.OpenUtils;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
+public class PhotoFilter {
+    private final int mProgram;
+    private final int vPosition;
+    private final int vCoord;
+
+    private final int[] uTextureUnitLocation;
+    private Context mContext;
+    private int mWidth;
+    private int mHeight;
+
+    private FloatBuffer cubeBuffer;
+
+
+    public PhotoFilter(Context mContext) {
+        this.mContext = mContext;
+        String vertetSource = OpenUtils.readRawTextFile(mContext.getApplicationContext(), R.raw.multi_texture_vertex_shader);
+        String fragSource = OpenUtils.readRawTextFile(mContext.getApplicationContext(), R.raw.lut_fragment_shader);
+
+        //创建定点着色器
+        int vshaderId = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
+        //绑定定点着色器到着色器程序上面
+        GLES20.glShaderSource(vshaderId, vertetSource);
+        //编译着色器代码
+        GLES20.glCompileShader(vshaderId);
+        //主动获取下配置是否成功，失败
+        int[] status = new int[1];
+        GLES20.glGetShaderiv(vshaderId, GLES20.GL_COMPILE_STATUS, status, 0);
+        if (status[0] != GLES20.GL_TRUE) {
+            throw new IllegalStateException("ScreenFilter 顶点着色器配置失败!");
+        }
+
+
+        int fshaderId = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
+        GLES20.glShaderSource(fshaderId, fragSource);
+        GLES20.glCompileShader(fshaderId);
+        GLES20.glGetShaderiv(vshaderId, GLES20.GL_COMPILE_STATUS, status, 0);
+        if (status[0] != GLES20.GL_TRUE) {
+            throw new IllegalStateException("ScreenFilter 片元着色器配置失败!");
+        }
+        //创建运行在GPU上面运行的小程序
+        mProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(mProgram, vshaderId);
+        GLES20.glAttachShader(mProgram, fshaderId);
+
+        //链接着色器程序
+        GLES20.glLinkProgram(mProgram);
+
+        //获取链接是否成功的状态信息
+        GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, status, 0);
+        if (status[0] != GLES20.GL_TRUE) {
+            throw new IllegalStateException("ScreenFilter 着色器程序配置失败!");
+        }
+
+        //因为已经塞到了着色器程序里面，所以现在删除也没关系
+        GLES20.glDeleteShader(vshaderId);
+        GLES20.glDeleteShader(fshaderId);
+
+        /**
+         * 1.找到写在glsl 文件中的变量
+         *
+         * 2.赋值(这步也就是画画的过程)
+         */
+
+        vPosition = GLES20.glGetAttribLocation(mProgram, "a_Position");
+        vCoord = GLES20.glGetAttribLocation(mProgram, "a_TextureCoordinates");
+
+        uTextureUnitLocation = new int[2];
+        for(int i = 0; i < uTextureUnitLocation.length; i++){
+            uTextureUnitLocation[i] = glGetUniformLocation(mProgram, "u_TextureUnit" + i);
+        }
+
+
+
+
+        //定点着色器坐标
+        float[] v = {
+                -1.0f, -1.0f, 0f, 1f,
+                1.0f, -1.0f, 1f, 1f,
+                -1.0f, 1.0f, 0f, 0f,
+                1.0f, 1.0f,  1f, 0f
+               /* -1.0f, -1.0f, 0f, 1f,
+                1.0f, -1.0f, 1f, 1f,
+                -1.0f, 1.0f, 0f, 0f,
+                1.0f, 1.0f, 1f, 0f,*/
+        };
+        cubeBuffer = ByteBuffer.allocateDirect(v.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        cubeBuffer.clear();
+
+        cubeBuffer.put(v);
+
+    }
+
+
+    public void onDrawFrame(int [] textureIDs) {
+        GLES20.glViewport(0, 0, mWidth, mHeight);
+        //使用这个着色器小程序
+        GLES20.glUseProgram(mProgram);
+
+
+        //通过mVertexBuffer把cpu 中的数据传递到GPU里面的变量中
+        cubeBuffer.position(0);
+        //坐标赋值
+        GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 16, cubeBuffer);//16 todo?
+        //激活数据
+        GLES20.glEnableVertexAttribArray(vPosition);
+        cubeBuffer.position(0);
+
+        //纹理赋值
+        cubeBuffer.position(2);
+        GLES20.glVertexAttribPointer(vCoord,2,GLES20.GL_FLOAT, false, 16, cubeBuffer);//16 todo?
+        GLES20.glEnableVertexAttribArray(vCoord);
+
+
+        for(int i = 0; i < textureIDs.length; i++){
+            //激活图层
+            glActiveTexture(GL_TEXTURE0  + i);
+            //绑定图层
+            glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
+            //传递参数 0：需要和纹理层GL_TEXTURE0对应
+            glUniform1i(uTextureUnitLocation[i], i);
+        }
+        //参数传递完成，通知opengl开始画画 从第0点开始 共4个点
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
+    }
+
+
+    public void onReady(int width, int height) {
+        mWidth = width;
+        mHeight = height;
+    }
+}

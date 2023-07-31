@@ -9,8 +9,11 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glEnableVertexAttribArray;
+import static android.opengl.GLES20.glVertexAttribPointer;
 import static android.opengl.GLES20.glViewport;
 
 import static com.example.myapplication.bean.Constants.BYTES_PER_FLOAT;
@@ -23,10 +26,10 @@ import com.example.myapplication.opengl.utils.TextureHelper;
 
 public class LUTRender implements GLSurfaceView.Renderer {
     private static final String TAG = "LUTRender";
-    private static final int POSITION_COMPONENT_COUNT = 2;
-    private static final int TEXTURE_COORDINATES_COMPONENT_COUNT = 2;
-    private static final int STRIDE = (POSITION_COMPONENT_COUNT
-            + TEXTURE_COORDINATES_COMPONENT_COUNT) * BYTES_PER_FLOAT;
+   /* private static final int POSITION_COMPONENT_COUNT = 2;
+    private static final int TEXTURE_COORDINATES_COMPONENT_COUNT = 2;*/
+   /* private static final int STRIDE = (POSITION_COMPONENT_COUNT
+            + TEXTURE_COORDINATES_COMPONENT_COUNT) * BYTES_PER_FLOAT;*/
 
     /**
      * 纹理坐标信息用来定义该矩形上每个顶点对应的纹理坐标，以决定如何在这个矩形上贴图（即将图片纹理映射到矩形上）。
@@ -90,17 +93,33 @@ public class LUTRender implements GLSurfaceView.Renderer {
         lutProgram.useProgram();
         lutProgram.setUniforms(textureIDs);
 
-        vertexArray.setVertexAttribPointer(
+     /*   vertexArray.setVertexAttribPointer(
                 0,
                 lutProgram.getPositionAttributeLocation(),
-                POSITION_COMPONENT_COUNT,
-                STRIDE);
+                2,
+                16);*/
 
-        vertexArray.setVertexAttribPointer(
-                POSITION_COMPONENT_COUNT,
+        vertexArray.floatBuffer.position(0);
+        glVertexAttribPointer(lutProgram.getPositionAttributeLocation(), 2, GL_FLOAT,
+                false, 16, vertexArray.floatBuffer);
+        glEnableVertexAttribArray(lutProgram.getPositionAttributeLocation());
+
+        vertexArray.floatBuffer.position(0);
+
+
+    /*    vertexArray.setVertexAttribPointer(
+                2,
                 lutProgram.getTextureCoordinatesAttributeLocation(),
-                TEXTURE_COORDINATES_COMPONENT_COUNT,
-                STRIDE);
+                2,
+                16);*/
+
+
+        vertexArray.floatBuffer.position(2);
+        glVertexAttribPointer(lutProgram.getTextureCoordinatesAttributeLocation(), 2, GL_FLOAT,
+                false, 16, vertexArray.floatBuffer);
+        glEnableVertexAttribArray(lutProgram.getTextureCoordinatesAttributeLocation());
+
+        vertexArray.floatBuffer.position(0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
     }
 }

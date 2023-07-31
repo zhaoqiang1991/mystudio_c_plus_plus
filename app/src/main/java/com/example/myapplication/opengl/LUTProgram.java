@@ -22,13 +22,13 @@ public class LUTProgram extends ShaderProgram{
 	public LUTProgram(Context context) {
 		super(context, R.raw.multi_texture_vertex_shader, R.raw.lut_fragment_shader);
 
-		aPositionLocation = glGetAttribLocation(program, A_POSITION);
-		aTextureCoordinatesLocation = glGetAttribLocation(program, A_TEXTURE_COORDINATES);
+		aPositionLocation = glGetAttribLocation(program, "a_Position");
+		aTextureCoordinatesLocation = glGetAttribLocation(program, "a_TextureCoordinates");
 
 		uTextureUnitLocation = new int[2];
 
 		for(int i = 0; i < uTextureUnitLocation.length; i++){
-			uTextureUnitLocation[i] = glGetUniformLocation(program, U_TEXTURE_UNIT + i);
+			uTextureUnitLocation[i] = glGetUniformLocation(program, "u_TextureUnit" + i);
 		}
 	}
 

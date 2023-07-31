@@ -19,7 +19,7 @@ import static com.example.myapplication.bean.Constants.BYTES_PER_FLOAT;
 
 
 public class VertexArray {    
-    private final FloatBuffer floatBuffer;
+    public final FloatBuffer floatBuffer;
 
     public VertexArray(float[] vertexData) {
         floatBuffer = ByteBuffer
@@ -28,7 +28,25 @@ public class VertexArray {
             .asFloatBuffer()
             .put(vertexData);
     }
-        
+
+
+    /**
+     * vertexArray.setVertexAttribPointer(
+     *                 0,
+     *                 lutProgram.getPositionAttributeLocation(),
+     *                 2,
+     *                 16);
+     *
+     *         vertexArray.setVertexAttribPointer(
+     *                 2,
+     *                 lutProgram.getTextureCoordinatesAttributeLocation(),
+     *                 2,
+     *                 16);
+     * @param dataOffset
+     * @param attributeLocation
+     * @param componentCount
+     * @param stride
+     */
     public void setVertexAttribPointer(int dataOffset, int attributeLocation,
         int componentCount, int stride) {        
         floatBuffer.position(dataOffset);        

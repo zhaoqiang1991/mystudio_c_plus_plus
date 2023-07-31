@@ -15,7 +15,9 @@ public class TigerPhotoGlsurfaceView extends GLSurfaceView {
         super(context, attrs);
         //设置EGL版本
         setEGLContextClientVersion(2);
-        setRenderer(new LUTRender(context));
+        //setRenderer(new LUTRender(context));
+        setRenderer(new PhotoRender(this));
+        //PhotoRender
         //渲染模式，按需渲染
         setRenderMode(RENDERMODE_WHEN_DIRTY);
 

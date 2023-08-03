@@ -4,7 +4,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
-import com.example.myapplication.opengl.filter.LUTRender;
+import com.example.myapplication.opengl.render.PhotoRender;
 
 public class TigerPhotoGlsurfaceView extends GLSurfaceView {
     public TigerPhotoGlsurfaceView(Context context) {
@@ -15,11 +15,15 @@ public class TigerPhotoGlsurfaceView extends GLSurfaceView {
         super(context, attrs);
         //设置EGL版本
         setEGLContextClientVersion(2);
-        //setRenderer(new LUTRender(context));
-        setRenderer(new PhotoRender(this));
+        setRenderer(getRenderProvider());
+       // setRenderer(new BaseSampleRender(context));
         //PhotoRender
         //渲染模式，按需渲染
         setRenderMode(RENDERMODE_WHEN_DIRTY);
 
+    }
+
+    protected Renderer getRenderProvider() {
+        return new PhotoRender(this);
     }
 }

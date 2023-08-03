@@ -4,26 +4,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".opengl.HomeActivity">
+    tools:context=".opengl.PhtotoFilterActivity">
 
-
-    <Button
-        android:id="@+id/grey_filter"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="灰色滤镜"
+    <ImageView
+        android:id="@+id/origiin_photo"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_marginBottom="5dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/lena"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-    <Button
-        android:id="@+id/canny_filter"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="canny滤镜"
+    <com.example.myapplication.opengl.CannyGlsurfaceView
+        android:id="@+id/tiger_photo_glsurfaceview"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/grey_filter" />
+        app:layout_constraintTop_toBottomOf="@+id/origiin_photo" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

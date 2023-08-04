@@ -1,12 +1,12 @@
 package com.example.myapplication.opengl;
 
-import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
 import com.example.myapplication.opengl.filter.ScreeFilter;
+import com.example.myapplication.opengl.surfaceview.TigerGlsurfaceView;
 import com.example.myapplication.opengl.utils.CameraHelper;
 
 import javax.microedition.khronos.egl.EGLConfig;

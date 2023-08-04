@@ -11,7 +11,7 @@ import com.example.myapplication.opengl.utils.TextureHelper;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class PhotoRender implements GLSurfaceView.Renderer {
+public class TriangleRender implements GLSurfaceView.Renderer {
     private final TigerPhotoGlsurfaceView mGlsurfaceView;
 
     private PhotoFilter mPhotoFilter;
@@ -19,21 +19,18 @@ public class PhotoRender implements GLSurfaceView.Renderer {
     private int lutTexture;
     private int[] textureIDs;
 
-    public PhotoRender(TigerPhotoGlsurfaceView glsurfaceView) {
+    public TriangleRender(TigerPhotoGlsurfaceView glsurfaceView) {
         mGlsurfaceView = glsurfaceView;
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-
         //保存在GPU的内存中，到时候通过UPDATE刷新到GPU里面
-
         originTexture = TextureHelper.loadTexture(mGlsurfaceView.getContext(), R.drawable.lena);
         lutTexture = TextureHelper.loadLutTexture(mGlsurfaceView.getContext(), R.drawable.fairy_tale);
 
         textureIDs = new int[]{originTexture, lutTexture};
         mPhotoFilter = new PhotoFilter(mGlsurfaceView.getContext());
-
     }
 
     @Override
@@ -53,6 +50,4 @@ public class PhotoRender implements GLSurfaceView.Renderer {
         //交给滤镜可以画画
         mPhotoFilter.onDrawFrame(textureIDs);
     }
-
-
 }

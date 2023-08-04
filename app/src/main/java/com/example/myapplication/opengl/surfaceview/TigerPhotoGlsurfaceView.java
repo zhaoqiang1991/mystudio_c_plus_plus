@@ -1,4 +1,4 @@
-package com.example.myapplication.opengl;
+package com.example.myapplication.opengl.surfaceview;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

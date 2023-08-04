@@ -3,9 +3,9 @@ package com.example.myapplication.opengl;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.view.View;
 
 import com.example.myapplication.R;
+import com.example.myapplication.opengl.surfaceview.TigerGlsurfaceView;
 
 public class OpenGlActivity extends AppCompatActivity {
     private TigerGlsurfaceView glSurfaceView;

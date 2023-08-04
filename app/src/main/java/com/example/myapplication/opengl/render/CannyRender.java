@@ -4,9 +4,8 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
 import com.example.myapplication.R;
-import com.example.myapplication.opengl.TigerPhotoGlsurfaceView;
+import com.example.myapplication.opengl.surfaceview.TigerPhotoGlsurfaceView;
 import com.example.myapplication.opengl.filter.CannyFilter;
-import com.example.myapplication.opengl.filter.PhotoFilter;
 import com.example.myapplication.opengl.utils.TextureHelper;
 
 import javax.microedition.khronos.egl.EGLConfig;

@@ -1,8 +1,10 @@
-package com.example.myapplication.opengl;
+package com.example.myapplication.opengl.surfaceview;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+
+import com.example.myapplication.opengl.TigerRender;
 
 public class TigerGlsurfaceView extends GLSurfaceView {
     public TigerGlsurfaceView(Context context) {

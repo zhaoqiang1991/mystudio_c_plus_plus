@@ -15,7 +15,7 @@ public class CannyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_canny);
-        glsurreView = this.findViewById(R.id.tiger_photo_glsurfaceview);
+        glsurreView = this.findViewById(R.id.tiger_canny_glsurfaceview);
     }
 
     @Override

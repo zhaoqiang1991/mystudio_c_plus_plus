@@ -15,7 +15,7 @@ public class PhtotoFilterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phtoto_filter);
-        glsurreView = this.findViewById(R.id.tiger_photo_glsurfaceview);
+        glsurreView = this.findViewById(R.id.tiger_canny_glsurfaceview);
     }
 
     @Override

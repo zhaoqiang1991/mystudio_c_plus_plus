@@ -4,8 +4,9 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.opengl.filter.CannyFilter;
+import com.example.myapplication.opengl.filter.TriangleFilter;
 import com.example.myapplication.opengl.surfaceview.TigerPhotoGlsurfaceView;
-import com.example.myapplication.opengl.filter.PhotoFilter;
 import com.example.myapplication.opengl.utils.TextureHelper;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -14,10 +15,9 @@ import javax.microedition.khronos.opengles.GL10;
 public class TriangleRender implements GLSurfaceView.Renderer {
     private final TigerPhotoGlsurfaceView mGlsurfaceView;
 
-    private PhotoFilter mPhotoFilter;
+    private TriangleFilter mTriangleFilter;
     private int originTexture;
-    private int lutTexture;
-    private int[] textureIDs;
+    private int textureID;
 
     public TriangleRender(TigerPhotoGlsurfaceView glsurfaceView) {
         mGlsurfaceView = glsurfaceView;
@@ -25,18 +25,15 @@ public class TriangleRender implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        //保存在GPU的内存中，到时候通过UPDATE刷新到GPU里面
-        originTexture = TextureHelper.loadTexture(mGlsurfaceView.getContext(), R.drawable.lena);
-        lutTexture = TextureHelper.loadLutTexture(mGlsurfaceView.getContext(), R.drawable.fairy_tale);
 
-        textureIDs = new int[]{originTexture, lutTexture};
-        mPhotoFilter = new PhotoFilter(mGlsurfaceView.getContext());
+        //保存在GPU的内存中，到时候通过UPDATE刷新到GPU里面
+        mTriangleFilter = new TriangleFilter(mGlsurfaceView.getContext());
+
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        mPhotoFilter.onReady(width, height);
-
+        mTriangleFilter.onReady(width, height);
     }
 
     //开始画画
@@ -48,6 +45,8 @@ public class TriangleRender implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         //交给滤镜可以画画
-        mPhotoFilter.onDrawFrame(textureIDs);
+        mTriangleFilter.onDrawFrame(textureID);
     }
+
+
 }

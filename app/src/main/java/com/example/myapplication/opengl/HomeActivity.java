@@ -13,6 +13,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private Button mGreyFilter;
     private Button mCannyFilter;
+    private Button mTriangleFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +21,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         mGreyFilter = this.findViewById(R.id.grey_filter);
         mCannyFilter = this.findViewById(R.id.canny_filter);
+        mTriangleFilter = this.findViewById(R.id.triangle_filter);
 
         mGreyFilter.setOnClickListener(click->{
             Intent intent = new Intent(HomeActivity.this,PhtotoFilterActivity.class);
@@ -28,6 +30,11 @@ public class HomeActivity extends AppCompatActivity {
 
         mCannyFilter.setOnClickListener(click->{
             Intent intent = new Intent(HomeActivity.this,CannyActivity.class);
+            startActivity(intent);
+        });
+
+        mTriangleFilter.setOnClickListener(click->{
+            Intent intent = new Intent(HomeActivity.this,TriangleActivity.class);
             startActivity(intent);
         });
     }

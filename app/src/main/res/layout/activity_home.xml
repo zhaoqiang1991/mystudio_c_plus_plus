@@ -26,4 +26,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/grey_filter" />
 
+
+    <Button
+        android:id="@+id/triangle_filter"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="绘制三角形"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/canny_filter" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

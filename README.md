@@ -14,6 +14,14 @@ https://blog.csdn.net/qq_18757557/article/details/131826726?spm=1001.2014.3001.5
  4.4 使用glsl语言绘制矩形
  ![image](https://github.com/zhaoqiang1991/mystudio_c_plus_plus/assets/7472721/210a3a15-d81a-481a-8b72-826a5fc3d523)
 
+五,在feature_filter 分支上面实现了美颜，大眼，贴纸特效，使用录制采用的是
+
+六,feature_live分支使用了rtmp协议，AudioRecord录音，Android自带的Camera采集视频数据，使用x264进行视频数据编码,然后
+通过Rtmp发送到流媒体服务器进行直播，下面是具体的直播视频demo
+录制的视频数据上传不上来，所以先放一个截图吧
+![image](https://github.com/zhaoqiang1991/mystudio_c_plus_plus/assets/7472721/3a661fe1-fe18-4634-8011-c3bb3d04e2e7)
+
+
 
  
 

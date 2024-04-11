@@ -37,7 +37,8 @@ public class PlayerActivity extends AppCompatActivity implements SeekBar.OnSeekB
         seekBar.setOnSeekBarChangeListener(this);
         tigerPlayer = new TigerPlayer();
         tigerPlayer.setSurfaceView(surfaceView);
-        playUrl = "http://vfx.mtime.cn/Video/2021/07/10/mp4/210710171112971120.mp4";
+        //测试地址 https://blog.csdn.net/haoaiqian/article/details/115176565?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-8-115176565-blog-116190107.235^v43^pc_blog_bottom_relevance_base5&spm=1001.2101.3001.4242.5&utm_relevant_index=9
+        playUrl = "http://vjs.zencdn.net/v/oceans.mp4";
         tigerPlayer.setDataSource(playUrl);
 
         Log.d(TAG, "==========PlayerActivity onCreate ");
